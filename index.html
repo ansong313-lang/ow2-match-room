@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OW2 내전 매치룸</title>
+<!-- Chart.js 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#0b0e14;--panel:#141923;--panel2:#1a2230;--line:#2a3445;--text:#f4f6fb;--muted:#9ba7ba;--orange:#ff8a3d;--blue:#59b8ff;--green:#63d6a3;--red:#ff6f78}
+*{box-sizing:border-box}body{margin:0;color:var(--text);background:radial-gradient(ellipse at 15% 0%,rgba(255,138,61,.12),transparent 35%),radial-gradient(ellipse at 90% 15%,rgba(89,184,255,.09),transparent 32%),var(--bg);font-family:Inter,"Pretendard","Noto Sans KR",system-ui,sans-serif;min-height:100vh}
+.wrap{width:min(1320px,calc(100% - 32px));margin:auto;padding:35px 0 60px}header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:25px}.eyebrow{color:var(--orange);font-weight:800;letter-spacing:.16em;font-size:12px}h1{font-size:clamp(28px,4vw,42px);margin:8px 0 10px;letter-spacing:-.04em}h2{margin:0;font-size:19px;letter-spacing:-.02em}h3{margin:0;font-size:15px}.sub{color:var(--muted);line-height:1.65;margin:0;max-width:720px}.pill{border:1px solid #3c4657;border-radius:999px;color:#c5cede;padding:9px 13px;font-size:12px;white-space:nowrap}
+.panel{background:rgba(20,25,35,.94);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,.18);margin-bottom:18px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}.section-note{color:var(--muted);font-size:12px;margin-top:5px}.actions{display:flex;gap:9px;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:11px 15px;cursor:pointer;font-weight:800;font-size:13px;transition:transform .15s,filter .15s}button:hover{transform:translateY(-1px);filter:brightness(1.08)}button:disabled{opacity:.35;cursor:not-allowed;transform:none}.btn-secondary{color:#e1e7f1;background:#252e3d;border:1px solid #3a465a}.btn-primary{color:#17120f;background:linear-gradient(135deg,#ffb16e,var(--orange));box-shadow:0 6px 18px rgba(255,138,61,.2)}.btn-danger{color:#ffd8da;background:#38232a;border:1px solid #69343c}.btn-success{color:#0b0e14;background:var(--green);box-shadow:0 6px 18px rgba(99,214,163,.2)}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:separate;border-spacing:0;min-width:950px}th{text-align:left;color:#9eabbe;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:0 10px 11px}td{padding:7px 8px;border-top:1px solid #252e3c}td:first-child{color:#78869b;font-size:12px;width:42px;padding-left:10px}
+input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #303b4d;border-radius:8px;padding:10px 11px;outline:none;font:inherit;font-size:13px;min-width:0}input:focus,select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,138,61,.12)}select{cursor:pointer}.table-footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-top:16px}.hint,.footnote{color:var(--muted);font-size:12px;line-height:1.7}.error,.notice{display:none;margin-top:14px;padding:12px 14px;border-radius:10px;font-size:13px}.error{color:#ffd4d6;background:rgba(255,111,120,.1);border:1px solid rgba(255,111,120,.3)}.notice{color:#c7f7df;background:rgba(99,214,163,.08);border:1px solid rgba(99,214,163,.25)}
+.results{margin-bottom:18px}.results-top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}.score-chip{background:#1c2633;border:1px solid #344155;border-radius:10px;padding:9px 12px;font-size:12px;color:#c9d3e2}.score-chip strong{color:var(--green);font-size:15px;margin-left:6px}.teams{display:grid;grid-template-columns:1fr 1fr;gap:16px}.team{overflow:hidden;border-radius:16px;border:1px solid var(--line);background:linear-gradient(180deg,#18202c,#121720)}.team-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 19px;border-bottom:1px solid var(--line)}.team-title{display:flex;align-items:center;gap:11px;font-size:19px;font-weight:900}.team-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;font-size:13px}.team-a .team-mark{color:#a8ddff;background:rgba(89,184,255,.14);border:1px solid rgba(89,184,255,.3)}.team-b .team-mark{color:#ffc18f;background:rgba(255,138,61,.14);border:1px solid rgba(255,138,61,.3)}.avg{text-align:right;color:var(--muted);font-size:11px}.avg strong{display:block;color:var(--text);font-size:19px;margin-top:3px}.members{padding:10px;display:grid;gap:8px}.member{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.025);border:1px solid #252e3b;border-radius:11px}.role-icon{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:9px;background:#222c3a;color:#cbd5e4;font-weight:900;font-size:12px}.member-info{min-width:0;flex:1}.member-name{font-weight:800;font-size:14px;overflow-wrap:anywhere}.member-meta{display:flex;gap:7px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:5px}.tag{border-radius:5px;padding:3px 6px;background:#222c3a}.tag.match{color:#83e4b8;background:rgba(99,214,163,.1)}.points{color:#dfe6f1;font-weight:800;font-variant-numeric:tabular-nums;font-size:13px}.empty{text-align:center;border:1px dashed #354154;border-radius:16px;padding:35px 18px;color:var(--muted);background:rgba(20,25,35,.55)}.empty .symbol{font-size:28px;margin-bottom:9px;color:var(--orange)}
+.map-layout{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center}.map-display{background:linear-gradient(135deg,#1d2938,#111720);border:1px solid #334155;border-radius:14px;padding:22px;min-width:220px}.map-label{color:var(--orange);font-size:11px;font-weight:900;letter-spacing:.12em}.map-name{font-size:26px;font-weight:900;margin:8px 0 5px}.map-mode{color:var(--muted);font-size:12px}
+.draft-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.draft-team{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#111720}.draft-title{padding:14px 16px;background:#1a2230;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.draft-content{padding:14px;display:grid;gap:13px}.slot-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px}.slot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.slot-grid select{font-size:12px;padding:9px 7px}.hero-status{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.6}.section-actions{display:flex;gap:8px;flex-wrap:wrap}.footer{margin-top:20px;color:#8491a5;font-size:11px;line-height:1.7}
+
+.member-table{min-width:1150px}.member-table td:first-child{width:auto}.member-table .pick-col{width:42px;text-align:center}.member-table input[type="checkbox"]{width:17px;height:17px;accent-color:var(--orange);cursor:pointer}.member-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.count-label{font-size:12px;color:var(--muted);padding:8px 10px;background:#101620;border:1px solid #2d384a;border-radius:999px}.file-input{display:none}.library-intro{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+
+.tier-group{display:flex;gap:3px;align-items:center}
+.tier-group select.tier{flex:2}
+.tier-group select.sub-tier{flex:1.2}
+.tier-preview{flex:2.2;background:#101620;border:1px solid #2a3445;border-radius:8px;padding:7px 6px;font-size:11px;color:#c9d3e2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tier-preview strong{color:var(--orange)}
+
+.excluded-box{margin-top:14px;padding:14px 18px;background:rgba(255,138,61,.08);border:1px solid rgba(255,138,61,.25);border-radius:12px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.excluded-box strong{color:var(--orange)}
+.match-actions{display:flex;gap:10px;margin-top:16px;justify-content:center;flex-wrap:wrap}
+
+@media(max-width:760px){.wrap{width:calc(100% - 20px);padding-top:24px}header{display:block}.pill{display:inline-block;margin-top:16px}.panel{padding:15px}.section-head{align-items:flex-start;flex-direction:column}.teams,.draft-grid{grid-template-columns:1fr}.table-footer{align-items:flex-start;flex-direction:column}.map-layout{grid-template-columns:1fr}.map-display{min-width:0}.slot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div><div class="eyebrow">OVERWATCH 2 · CUSTOM MATCH</div><h1>내전 매치룸 <span style="color:var(--orange)">LAB</span></h1><p class="sub">우리 방 멤버 명단과 한글화된 전장 및 영웅 밴 시스템을 통해 원활한 내전을 진행하세요.</p></div><div class="pill">● 5 VS 5 MATCH ROOM</div></header>
+
+<section class="panel" id="libraryPanel">
+  <div class="section-head">
+    <div><h2>01 · 전체 멤버 보관함</h2><div class="section-note">우리 방 전체 멤버 명단이 저장되어 있습니다. [참가 등록] 버튼으로 오늘 참가할 인원들을 세팅하세요.</div></div>
+    <div class="member-toolbar">
+      <span class="count-label" id="libraryCount">저장 멤버 0명</span>
+      <button class="btn-secondary" id="addMemberBtn">＋ 멤버 추가</button>
+      <button class="btn-secondary" id="saveLibraryBtn">명단 저장</button>
+      <button class="btn-secondary" id="backupBtn">💾 백업 다운로드</button>
+      <button class="btn-secondary" id="restoreBtn" style="position:relative; overflow:hidden;">📂 데이터 복원 <input type="file" id="restoreFile" accept=".json" style="position:absolute; inset:0; opacity:0; cursor:pointer;"></button>
+      <button class="btn-secondary" id="loadLibraryBtn">초기화</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="member-table">
+      <thead><tr><th class="pick-col">참가</th><th>#</th><th>이름</th><th>탱커 티어</th><th>딜러 티어</th><th>힐러 티어</th><th>개별 등록 / 삭제</th></tr></thead>
+      <tbody id="libraryBody"></tbody>
+    </table>
+  </div>
+  <div class="table-footer">
+    <div class="hint">체크박스로 선택한 뒤 일괄 불러오기 버튼을 누를 수도 있습니다.</div>
+    <button class="btn-primary" id="useSelectedBtn">☑ 선택한 멤버들을 참가자로 일괄 불러오기</button>
+  </div>
+  <div class="error" id="libraryError"></div><div class="notice" id="libraryNotice"></div>
+</section>
+
+<section class="panel">
+  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단 (인원 제한 없음)</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 연승(+80)/연패(-60) 보정이 자동 적용됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button><button class="btn-secondary" id="sampleBtn">상위 14명 채우기</button><button class="btn-secondary" id="saveBtn">명단 저장</button><button class="btn-secondary" id="loadBtn">저장 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
+  <div class="table-wrap">
+    <table class="member-table">
+      <thead><tr><th>#</th><th>이름</th><th>탱커 티어 (예상 환산)</th><th>딜러 티어 (예상 환산)</th><th>힐러 티어 (예상 환산)</th><th>삭제</th></tr></thead>
+      <tbody id="playersBody"></tbody>
+    </table>
+  </div>
+  <div class="table-footer"><div class="hint">티어는 9단계(브론즈~챔피언) 및 '플레이 안 함' 설정이 적용됩니다.</div><button class="btn-primary" id="generateBtn">⚡ 스마트 팀 밸런스 생성</button></div>
+  <div class="error" id="errorBox" role="alert"></div><div class="notice" id="noticeBox" role="status"></div>
+</section>
+
+<section class="panel results" id="resultsSection">
+  <div class="results-top">
+    <div><h2>03 · 팀 편성 결과</h2><div class="section-note">각 팀은 탱커 1 · 딜러 2 · 힐러 2로 구성되며, 탱커 체급 격차가 우선 제한됩니다.</div></div>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <button class="btn-secondary" id="reshuffleBtn" style="padding:8px 12px; font-size:12px;">🔀 다른 조합으로 재추첨</button>
+      <button class="btn-danger" id="resetTeamsBtn" style="padding:8px 12px; font-size:12px;">팀 편성 초기화</button>
+      <div class="score-chip">팀 평균 점수 차이 <strong id="diffChip">—</strong></div>
+    </div>
+  </div>
+  <div class="empty" id="emptyState"><div class="symbol">✦</div><strong>아직 팀이 편성되지 않았어요.</strong><div style="margin-top:7px;font-size:13px">참가자 정보를 확인한 뒤 상단의 ‘스마트 팀 밸런스 생성’을 눌러주세요.</div></div>
+  <div class="teams" id="teamsOutput" style="display:none"></div>
+  <div id="excludedOutput" style="display:none"></div>
+  <div class="match-actions" id="matchActions" style="display:none">
+    <button class="btn-primary" id="copyResultBtn">📋 팀 결과 텍스트 복사</button>
+    <button class="btn-success" id="winTeamABtn">🏆 Team A 승리 기록</button>
+    <button class="btn-success" id="winTeamBBtn">🏆 Team B 승리 기록</button>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="section-head">
+    <div><h2>04 · 맵 선택 / 랜덤 추첨 (플레이한 맵 중복 방지)</h2><div class="section-note">모드별로 필터링하여 랜덤 맵을 추첨할 수 있습니다.</div></div>
+    <div class="actions">
+      <select id="modeFilterSelect" style="width:130px; padding:7px; font-size:12px;">
+        <option value="전체">모든 모드</option>
+        <option value="쟁탈">쟁탈 모드만</option>
+        <option value="혼합">혼합 모드만</option>
+        <option value="호위">호위 모드만</option>
+        <option value="밀기">밀기 모드만</option>
+        <option value="플래시포인트">플래시포인트만</option>
+        <option value="격돌">격돌 모드만</option>
+      </select>
+      <button class="btn-secondary" id="resetPlayedMapsBtn">플레이한 맵 초기화</button>
+      <button class="btn-secondary" id="randomMapBtn">🎲 모드별 랜덤 맵 추첨</button>
+    </div>
+  </div>
+  <div class="map-layout"><div><label for="mapSelect" class="section-note" style="display:block;margin-bottom:7px">전장 선택</label><select id="mapSelect"></select></div><div class="map-display"><div class="map-label">CURRENT MAP</div><div class="map-name" id="mapName">맵을 선택하세요</div><div class="map-mode" id="mapMode">모드 정보</div></div></div>
+</section>
+
+<section class="panel">
+  <div class="section-head"><div><h2>05 · 영웅 밴 (BAN 전용)</h2><div class="section-note">탱커, 딜러, 힐러 역할군별로 깔끔하게 정리된 한글 영웅 밴 시스템입니다.</div></div><div class="actions"><button class="btn-secondary" id="resetDraftBtn">밴 초기화</button><button class="btn-secondary" id="randomDraftBtn">🎲 밴 랜덤 채우기</button></div></div>
+  <div class="draft-grid" id="draftGrid"></div>
+  <div class="hero-status" id="draftStatus">각 팀에서 밴할 영웅 2명씩 선택하세요.</div>
+</section>
+
+<section class="panel" style="margin-top:22px">
+  <div class="section-head">
+    <div>
+      <h2>06 · 포지션별 일자별 통계 기록실</h2>
+      <div class="section-note">유저의 탱커, 딜러, 힐러 포지션별 평점과 승패/보정 점수를 독립적으로 확인합니다.</div>
+    </div>
+    <div class="actions" style="align-items:center;">
+      <select id="daySelect" style="width:140px; padding:7px; font-size:12px;"></select>
+      <button class="btn-primary" id="saveDayBtn" style="padding:8px 12px; font-size:12px;">💾 오늘 경기(일차) 저장</button>
+      <button class="btn-danger" id="resetStreaksBtn" style="padding:8px 12px; font-size:12px;">기록 초기화</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th>이름</th>
+          <th>포지션</th>
+          <th>현재 상태</th>
+          <th>승 / 패 (승률)</th>
+          <th>기존 평점 (기준)</th>
+          <th>보정 점수</th>
+          <th>최종 포지션 평점</th>
+        </tr>
+      </thead>
+      <tbody id="streaksBody">
+        <tr><td colspan="8" style="text-align:center; color:var(--muted);">기록된 전적이 없습니다.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 07 섹션: 일자별 평점 변화 추이 그래프 -->
+<section class="panel" style="margin-top:22px">
+  <div class="section-head">
+    <div>
+      <h2>07 · 포지션별 일자별 평점 변화 추이 (그래프)</h2>
+      <div class="section-note">일차가 거듭될수록 멤버들의 포지션별 최종 평점 변화 추이를 그래프로 확인합니다.</div>
+    </div>
+    <div class="actions" style="align-items:center;">
+      <select id="graphMemberSelect" style="width:160px; padding:7px; font-size:12px;"></select>
+    </div>
+  </div>
+  <div style="position: relative; height: 350px; width: 100%;">
+    <canvas id="scoreChart"></canvas>
+  </div>
+</section>
+</div>
+
+<script>
+const validTiers=[
+  ["플레이 안 함", -99999, 0],
+  ["브론즈", 1000, 80],
+  ["실버", 1400, 80],
+  ["골드", 1800, 80],
+  ["플래티넘", 2200, 80],
+  ["에메랄드", 2600, 80],
+  ["다이아몬드", 3000, 100],
+  ["마스터", 3500, 100],
+  ["그랜드마스터", 4000, 100],
+  ["챔피언", 4500, 100]
+];
+const roles=["탱커","딜러","힐러"], shortRole={탱커:"T",딜러:"D",힐러:"S"};
+
+const defaultMemberLibrary = [
+  { name: "지환", tank: ["마스터", 5], dps: ["마스터", 4], supp: ["마스터", 3], selected: true },
+  { name: "낑낑이", tank: ["마스터", 4], dps: ["그랜드마스터", 4], supp: ["마스터", 4], selected: true },
+  { name: "서준", tank: ["마스터", 5], dps: ["마스터", 5], supp: ["마스터", 3], selected: true },
+  { name: "도둑", tank: ["에메랄드", 5], dps: ["에메랄드", 2], supp: ["그랜드마스터", 5], selected: true },
+  { name: "리벤", tank: ["다이아몬드", 3], dps: ["마스터", 3], supp: ["다이아몬드", 5], selected: true },
+  { name: "경로당트월킹머신", tank: ["에메랄드", 2], dps: ["다이아몬드", 4], supp: ["플레이 안 함", 1], selected: true },
+  { name: "박준", tank: ["그랜드마스터", 5], dps: ["마스터", 2], supp: ["마스터", 2], selected: true },
+  { name: "안디유", tank: ["다이아몬드", 3], dps: ["다이아몬드", 2], supp: ["마스터", 4], selected: true },
+  { name: "GEGURI", tank: ["다이아몬드", 5], dps: ["플레이 안 함", 1], supp: ["다이아몬드", 4], selected: true },
+  { name: "황지필이", tank: ["플래티넘", 3], dps: ["브론즈", 1], supp: ["다이아몬드", 5], selected: true },
+  { name: "연", tank: ["다이아몬드", 5], dps: ["골드", 1], supp: ["마스터", 5], selected: true },
+  { name: "환자목발솔더태클", tank: ["다이아몬드", 5], dps: ["다이아몬드", 4], supp: ["다이아몬드", 5], selected: true },
+  { name: "츠이센규", tank: ["마스터", 4], dps: ["마스터", 5], supp: ["마스터", 5], selected: true },
+  { name: "이우철", tank: ["플레이 안 함", 1], dps: ["다이아몬드", 3], supp: ["플레이 안 함", 1], selected: true },
+  { name: "우강송강", tank: ["에메랄드", 3], dps: ["다이아몬드", 3], supp: ["마스터", 2], selected: true },
+  { name: "영찬", tank: ["플레이 안 함", 1], dps: ["플래티넘", 5], supp: ["플래티넘", 5], selected: true },
+  { name: "동준", tank: ["그랜드마스터", 4], dps: ["그랜드마스터", 4], supp: ["그랜드마스터", 4], selected: true }
+];
+
+const maps=[
+  {name:"부산", mode:"쟁탈"}, {name:"일리오스", mode:"쟁탈"}, {name:"리장 타워", mode:"쟁탈"}, {name:"네팔", mode:"쟁탈"}, {name:"오아시스", mode:"쟁탈"}, {name:"사모아", mode:"쟁탈"}, {name:"남극 반도", mode:"쟁탈"},
+  {name:"블리자드 월드", mode:"혼합"}, {name:"아이헨발데", mode:"혼합"}, {name:"할리우드", mode:"혼합"}, {name:"왕의 길", mode:"혼합"}, {name:"미드타운", mode:"혼합"}, {name:"눔바니", mode:"혼합"}, {name:"파라이수", mode:"혼합"}, {name:"네온 교차로", mode:"혼합"},
+  {name:"서킷 로얄", mode:"호위"}, {name:"도라도", mode:"호위"}, {name:"아바나", mode:"호위"}, {name:"쓰레기촌", mode:"호위"}, {name:"리알토", mode:"호위"}, {name:"66번 국도", mode:"호위"}, {name:"샴발리 수도원", mode:"호위"}, {name:"그림슨뵈튼", mode:"호위"},
+  {name:"콜로세오", mode:"밀기"}, {name:"이스페란사", mode:"밀기"}, {name:"뉴 퀸 스트리트", mode:"밀기"}, {name:"루나사피", mode:"밀기"},
+  {name:"아틀리스", mode:"플래시포인트"}, {name:"뉴 정크 시티", mode:"플래시포인트"}, {name:"수라바사", mode:"플래시포인트"},
+  {name:"하나오카", mode:"격돌"}, {name:"아누비스의 왕좌", mode:"격돌"}
+];
+
+const heroes=[
+  {name:"D.Va", role:"탱커"}, {name:"둠피스트", role:"탱커"}, {name:"해저드", role:"탱커"}, {name:"정커퀸", role:"탱커"}, {name:"마우가", role:"탱커"}, {name:"오리사", role:"탱커"}, {name:"라마트라", role:"탱커"}, {name:"라인하르트", role:"탱커"}, {name:"로드호그", role:"탱커"}, {name:"시그마", role:"탱커"}, {name:"윈스턴", role:"탱커"}, {name:"레킹볼", role:"탱커"}, {name:"자리야", role:"탱커"}, {name:"도미나", role:"탱커"},
+  {name:"애쉬", role:"딜러"}, {name:"바스티온", role:"딜러"}, {name:"캐서디", role:"딜러"}, {name:"에코", role:"딜러"}, {name:"프레야", role:"딜러"}, {name:"겐지", role:"딜러"}, {name:"한조", role:"딜러"}, {name:"정크랫", role:"딜러"}, {name:"메이", role:"딜러"}, {name:"파라", role:"딜러"}, {name:"리퍼", role:"딜러"}, {name:"소전", role:"딜러"}, {name:"솔저: 76", role:"딜러"}, {name:"시메트라", role:"딜러"}, {name:"토르비욘", role:"딜러"}, {name:"트레이서", role:"딜러"}, {name:"벤처", role:"딜러"}, {name:"위도우메이커", role:"딜러"}, {name:"시온", role:"딜러"}, {name:"벤데타", role:"딜러"}, {name:"엠레", role:"딜러"}, {name:"안란", role:"딜러"}, {name:"시에라", role:"딜러"},
+  {name:"아나", role:"힐러"}, {name:"바티스트", role:"힐러"}, {name:"브리기테", role:"힐러"}, {name:"일리아리", role:"힐러"}, {name:"준오", role:"힐러"}, {name:"키리코", role:"힐러"}, {name:"라이프위버", role:"힐러"}, {name:"루시우", role:"힐러"}, {name:"메르시", role:"힐러"}, {name:"모이라", role:"힐러"}, {name:"주양", role:"힐러"}, {name:"젠야타", role:"힐러"}, {name:"독트린", role:"힐러"}, {name:"미즈키", role:"힐러"}, {name:"제트펫 캣", role:"힐러"}
+];
+
+const body=document.getElementById("playersBody");
+const tierOpts=validTiers.map(([name])=>`<option>${name}</option>`).join("");
+const subtierOpts=[1,2,3,4,5].map(x=>`<option value="${x}">${x}티어</option>`).join("");
+
+let currentMatchData = null;
+let playedMapIndices = [];
+let lastExcludedNames = [];
+let lastValidPlayersCache = []; 
+let scoreChartInstance = null;
+
+const STORAGE_PREFIX = "ow2MatchRoom_Days_v9";
+
+function getAllDaysData(){
+  const raw = localStorage.getItem(STORAGE_PREFIX);
+  return raw ? JSON.parse(raw) : { "1일차 (오늘)": {} };
+}
+
+function saveAllDaysData(data){
+  localStorage.setItem(STORAGE_PREFIX, JSON.stringify(data));
+}
+
+function getCurrentDayKey(){
+  const sel = document.getElementById("daySelect");
+  return sel ? sel.value : "1일차 (오늘)";
+}
+
+function getStreaks(){
+  const allDays = getAllDaysData();
+  const dayKey = getCurrentDayKey();
+  return allDays[dayKey] || {};
+}
+
+function saveStreaks(streaks){
+  const allDays = getAllDaysData();
+  const dayKey = getCurrentDayKey();
+  allDays[dayKey] = streaks;
+  saveAllDaysData(allDays);
+  updateAllRowPreviews();
+  renderStreaksTable();
+  updateGraphMemberSelect();
+  updateScoreChart();
+}
+
+function initDaySelect(){
+  const allDays = getAllDaysData();
+  const sel = document.getElementById("daySelect");
+  const keys = Object.keys(allDays);
+  if(keys.length === 0) keys.push("1일차 (오늘)");
+  
+  const currentVal = sel.value || keys[0];
+  sel.innerHTML = keys.map(k => `<option value="${k}" ${k === currentVal ? "selected" : ""}>${k}</option>`).join("");
+  sel.removeEventListener("change", handleDayChange);
+  sel.addEventListener("change", handleDayChange);
+}
+
+function handleDayChange(){
+  updateAllRowPreviews();
+  renderStreaksTable();
+  msg("noticeBox", `[${getCurrentDayKey()}] 포지션별 전적 기록을 불러왔습니다.`);
+}
+
+document.getElementById("saveDayBtn").addEventListener("click", () => {
+  const allDays = getAllDaysData();
+  const nextNum = Object.keys(allDays).length + 1;
+  const newKey = `${nextNum}일차 (${new Date().toLocaleDateString()})`;
+  allDays[newKey] = {};
+  saveAllDaysData(allDays);
+  initDaySelect();
+  document.getElementById("daySelect").value = newKey;
+  updateAllRowPreviews();
+  renderStreaksTable();
+  updateGraphMemberSelect();
+  updateScoreChart();
+  msg("noticeBox", `새로운 [${newKey}]이(가) 생성되었습니다!`);
+});
+
+function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;")}
+
+function scoreToTierString(score){
+  if(score <= -90000) return "플레이 안 함";
+  if(score >= 4500) return "챔피언";
+  
+  for(let i = validTiers.length - 1; i >= 0; i--){
+    const [tName, tBase, step] = validTiers[i];
+    if(tName === "플레이 안 함") continue;
+    if(score >= tBase){
+      const diff = score - tBase;
+      let subTier = 5 - Math.floor(diff / step);
+      if(subTier < 1) subTier = 1;
+      if(subTier > 5) subTier = 5;
+      return `${tName} ${subTier}티어`;
+    }
+  }
+  return "브론즈 5티어";
+}
+
+function createTierSelectHTML(roleName){
+ return `<div class="tier-group" data-role="${roleName}">
+   <select class="tier">${tierOpts}</select>
+   <select class="sub sub-tier">${subtierOpts}</select>
+   <div class="tier-preview"><strong>-</strong></div>
+ </div>`;
+}
+
+function addPlayerRow(p = null){
+  const i = body.querySelectorAll("tr").length;
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td>${String(i+1).padStart(2,"0")}</td>
+  <td><input class="p-name" maxlength="30" placeholder="참가자 이름" value="${esc(p?.[0]||"")}"></td>
+  <td>${createTierSelectHTML("탱커")}</td>
+  <td>${createTierSelectHTML("딜러")}</td>
+  <td>${createTierSelectHTML("힐러")}</td>
+  <td><button type="button" class="btn-danger player-remove" style="padding:6px 8px; font-size:11px;">삭제</button></td>`;
+  
+  tr.querySelector(".player-remove").addEventListener("click", () => {
+    tr.remove();
+    updatePlayerRowNumbers();
+    updateGraphMemberSelect();
+  });
+  
+  tr.querySelector(".p-name").addEventListener("input", () => {
+    updateRowPreviews(tr);
+    updateGraphMemberSelect();
+  });
+  tr.querySelectorAll("select").forEach(sel => sel.addEventListener("change", () => {
+    updateRowPreviews(tr);
+    updateScoreChart();
+  }));
+
+  body.appendChild(tr);
+  
+  if(p){
+    const selects = tr.querySelectorAll("select");
+    if(p[1]){ selects[0].value=p[1][0]; selects[1].value=String(p[1][1]); }
+    if(p[2]){ selects[2].value=p[2][0]; selects[3].value=String(p[2][1]); }
+    if(p[3]){ selects[4].value=p[3][0]; selects[5].value=String(p[3][1]); }
+  }
+  updateRowPreviews(tr);
+  updateGraphMemberSelect();
+}
+
+function updateRowPreviews(tr){
+  const name = tr.querySelector(".p-name")?.value.trim();
+  const streaks = getStreaks();
+  
+  ["탱커", "딜러", "힐러"].forEach(role => {
+    const group = tr.querySelector(`.tier-group[data-role="${role}"]`);
+    if(!group) return;
+    const previewDiv = group.querySelector(".tier-preview");
+    if(!previewDiv) return;
+
+    const selects = group.querySelectorAll("select");
+    const tName = selects[0].value;
+    const sub = Number(selects[1].value);
+
+    const found = validTiers.find(x=>x[0]===tName);
+    if(!found || tName === "플레이 안 함"){
+      previewDiv.innerHTML = `플레이 안 함`;
+      return;
+    }
+
+    const [, tBase, step] = found;
+    let baseScore = tBase + (5 - sub) * step;
+    
+    const roleData = streaks[name]?.[role];
+    let netBonus = 0;
+    if(roleData){
+      netBonus = (roleData.bonusPool || 0) - (roleData.slump || 0) * 60;
+    }
+
+    let finalScore = baseScore + netBonus;
+    let convertedTierStr = scoreToTierString(finalScore);
+    
+    let bonusStr = "";
+    if(netBonus > 0) bonusStr = ` <span style="color:var(--green);">(+${netBonus})</span>`;
+    else if(netBonus < 0) bonusStr = ` <span style="color:var(--red);">(${netBonus})</span>`;
+
+    previewDiv.innerHTML = `<strong>${convertedTierStr}</strong>${bonusStr}`;
+  });
+}
+
+function updateAllRowPreviews(){
+  [...body.querySelectorAll("tr")].forEach(tr => updateRowPreviews(tr));
+}
+
+function updatePlayerRowNumbers(){
+  [...body.querySelectorAll("tr")].forEach((tr, idx) => {
+    tr.children[0].textContent = String(idx + 1).padStart(2, "0");
+  });
+}
+
+function buildRows(data){
+ body.innerHTML="";
+ if(data && data.length > 0){
+   data.forEach(p => addPlayerRow(p));
+ } else {
+   for(let i=0; i<10; i++) addPlayerRow();
+ }
+ updateGraphMemberSelect();
+}
+
+function getScore(tierName, sub, name, role){
+ const found = validTiers.find(x=>x[0]===tierName);
+ if(!found || tierName === "플레이 안 함") return -99999;
+ 
+ const [, tBase, step] = found;
+ let baseScore = tBase + (5 - sub) * step;
+ 
+ const streaks = getStreaks();
+ const roleData = streaks[name]?.[role] || { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0 };
+ 
+ let bonusScore = (roleData.bonusPool || 0) - (roleData.slump || 0) * 60;
+
+ return { total: baseScore + bonusScore, base: baseScore, bonus: bonusScore };
+}
+
+function readPlayers(){
+ return [...body.querySelectorAll("tr")].map((tr,i)=>{
+  const name = tr.querySelector(".p-name").value.trim();
+  if(!name) return null;
+  const selects = tr.querySelectorAll("select");
+  const tankTier = selects[0].value, tankSub = Number(selects[1].value);
+  const dpsTier = selects[2].value, dpsSub = Number(selects[3].value);
+  const suppTier = selects[4].value, suppSub = Number(selects[5].value);
+
+  return {
+   id: i,
+   name,
+   roles: {
+    탱커: { tier: tankTier, sub: tankSub, ...getScore(tankTier, tankSub, name, "탱커") },
+    딜러: { tier: dpsTier, sub: dpsSub, ...getScore(dpsTier, dpsSub, name, "딜러") },
+    힐러: { tier: suppTier, sub: suppSub, ...getScore(suppTier, suppSub, name, "힐러") }
+   }
+  };
+ }).filter(Boolean);
+}
+
+function msg(id,text){const e=document.getElementById(id);if(e){e.textContent=text;e.style.display=text?"block":"none"}}
+
+function saveRoster(show=true){
+ const allPs = [...body.querySelectorAll("tr")].map((tr)=>{
+  const name = tr.querySelector(".p-name").value.trim();
+  const selects = tr.querySelectorAll("select");
+  return [name, [selects[0].value, Number(selects[1].value)], [selects[2].value, Number(selects[3].value)], [selects[4].value, Number(selects[5].value)]];
+ });
+ localStorage.setItem("ow2MatchRoomRoster",JSON.stringify(allPs));
+ if(show)msg("noticeBox","명단 데이터가 저장되었습니다.");
+}
+
+function loadRoster(show=true){
+ const raw=localStorage.getItem("ow2MatchRoomRoster");
+ if(!raw){if(show)msg("errorBox","저장된 명단이 없습니다.");return false}
+ try{buildRows(JSON.parse(raw));if(show)msg("noticeBox","저장된 명단을 불러왔습니다.");return true}
+ catch(e){return false}
+}
+
+function findBest(players, maxTankDiff = 250){
+ let best = null;
+ const indices = Array.from({length:10}, (_,i)=>i);
+
+ function getCombinations(arr, r){
+  let results = [];
+  function combine(active, start){
+   if(active.length === r){ results.push([...active]); return; }
+   for(let i=start; i<arr.length; i++){
+    active.push(arr[i]);
+    combine(active, i+1);
+    active.pop();
+   }
+  }
+  combine([], 0);
+  return results;
+ }
+
+ const teamACombos = getCombinations(indices, 5);
+
+ for(const teamAIndices of teamACombos){
+  const setA = new Set(teamAIndices);
+  const teamBIndices = indices.filter(i => !setA.has(i));
+
+  const teamA = teamAIndices.map(i => players[i]);
+  const teamB = teamBIndices.map(i => players[i]);
+
+  const assignA = optimizeLineup(teamA);
+  const assignB = optimizeLineup(teamB);
+
+  if(!assignA || !assignB) continue;
+
+  const tankAIndex = assignA.assignment.indexOf("탱커");
+  const tankBIndex = assignB.assignment.indexOf("탱커");
+  const tankAScore = teamA[tankAIndex].roles["탱커"].total;
+  const tankBScore = teamB[tankBIndex].roles["탱커"].total;
+  const tankDiff = Math.abs(tankAScore - tankBScore);
+
+  if(maxTankDiff !== null && tankDiff > maxTankDiff) continue;
+
+  const avga = assignA.totalScore / 5;
+  const avgb = assignB.totalScore / 5;
+  const gap = Math.abs(avga - avgb);
+
+  if(!best || gap < best.gap || (best && tankDiff < best.tankDiff)){
+   best = { a: teamA, b: teamB, assignA, assignB, avga, avgb, gap, tankDiff };
+  }
+ }
+ return best;
+}
+
+function optimizeLineup(team){
+ let bestAssign = null;
+ let maxScore = -1;
+
+ function evaluateAssignment(userIndex, currentRoles, scoreSum){
+  if(userIndex === 5){
+   if(scoreSum > maxScore){
+    maxScore = scoreSum;
+    bestAssign = [...currentRoles];
+   }
+   return;
+  }
+
+  const availableRoles = ['탱커', '딜러', '딜러', '힐러', '힐러'];
+  currentRoles.forEach(r => {
+   const idx = availableRoles.indexOf(r);
+   if(idx > -1) availableRoles.splice(idx, 1);
+  });
+
+  const uniqueRolesToTry = [...new Set(availableRoles)];
+  for(const role of uniqueRolesToTry){
+   if(team[userIndex].roles[role].total <= -90000) continue;
+
+   currentRoles.push(role);
+   evaluateAssignment(userIndex + 1, currentRoles, scoreSum + team[userIndex].roles[role].total);
+   currentRoles.pop();
+  }
+ }
+
+ evaluateAssignment(0, [], 0);
+ return bestAssign ? { assignment: bestAssign, totalScore: maxScore } : null;
+}
+
+function renderTeam(title, team, assignment, avg, cls){
+ const members = team.map((p, i) => ({ p, role: assignment[i] }))
+   .sort((a,b) => ({탱커:0, 딜러:1, 힐러:2}[a.role] - ({탱커:0, 딜러:1, 힐러:2}[b.role])));
+
+ return `<article class="team ${cls}">
+   <div class="team-head">
+     <div class="team-title"><div class="team-mark">${title.endsWith("A")?"A":"B"}</div>${title}</div>
+     <div class="avg">평균 티어 점수<strong>${Math.round(avg).toLocaleString()}점</strong></div>
+   </div>
+   <div class="members">
+     ${members.map(({p, role}) => {
+       const rData = p.roles[role];
+       let bonusText = "";
+       if(rData.bonus > 0){
+         bonusText = `<span class="tag" style="color:var(--orange); background:rgba(255,138,61,0.1);">🔥 +${rData.bonus}점 보정</span>`;
+       } else if(rData.bonus < 0){
+         bonusText = `<span class="tag" style="color:var(--red); background:rgba(255,111,120,0.1);">❄️ ${rData.bonus}점 페널티</span>`;
+       }
+       return `<div class="member">
+         <div class="role-icon">${shortRole[role]}</div>
+         <div class="member-info">
+           <div class="member-name">${esc(p.name)}</div>
+           <div class="member-meta">
+             <span class="tag match">${role} 배정</span>
+             <span class="tag">${rData.tier === "플레이 안 함" ? "플레이 안 함" : rData.tier + " " + rData.sub + "티어"}</span>
+             ${bonusText}
+             <span class="points">${rData.total <= -90000 ? "제외" : rData.total.toLocaleString() + "점"}</span>
+           </div>
+         </div>
+       </div>`;
+     }).join("")}
+   </div>
+ </article>`;
+}
+
+function generateTeams(){
+ msg("errorBox",""); msg("noticeBox","");
+ const validPlayers = readPlayers();
+ lastValidPlayersCache = validPlayers;
+ 
+ if(validPlayers.length < 10){
+  msg("errorBox","조합 실패: 최소 10명 이상의 참가자 이름이 입력되어야 합니다.");
+  return;
+ }
+
+ const priorityPlayers = [];
+ const normalPlayers = [];
+
+ validPlayers.forEach(p => {
+   if(lastExcludedNames.includes(p.name)){
+     priorityPlayers.push(p);
+   } else {
+     normalPlayers.push(p);
+   }
+ });
+
+ let result = null;
+ let matchPlayers = [];
+ let excludedPlayers = [];
+
+ for(let attempt = 0; attempt < 30; attempt++){
+   let shuffledNormal = [...normalPlayers].sort(() => Math.random() - 0.5);
+   let candidate10 = [];
+   
+   if(priorityPlayers.length >= 10){
+     candidate10 = [...priorityPlayers].sort(() => Math.random() - 0.5).slice(0, 10);
+   } else {
+     const needed = 10 - priorityPlayers.length;
+     candidate10 = [...priorityPlayers, ...shuffledNormal.slice(0, needed)];
+   }
+
+   const res = findBest(candidate10, 250);
+   if(res){
+     result = res;
+     matchPlayers = candidate10;
+     break;
+   }
+ }
+
+ if(!result){
+   let shuffledNormal = [...normalPlayers].sort(() => Math.random() - 0.5);
+   const needed = 10 - priorityPlayers.length;
+   matchPlayers = [...priorityPlayers, ...shuffledNormal.slice(0, needed)];
+   result = findBest(matchPlayers, null);
+ }
+
+ if(!result){
+  msg("errorBox","조합 실패: 입력된 인원들의 포지션 설정을 확인해주세요.");
+  return;
+ }
+
+ excludedPlayers = validPlayers.filter(p => !matchPlayers.some(mp => mp.name === p.name));
+ lastExcludedNames = excludedPlayers.map(p => p.name);
+
+ currentMatchData = {
+   teamA: result.a, assignA: result.assignA.assignment,
+   teamB: result.b, assignB: result.assignB.assignment
+ };
+
+ document.getElementById("emptyState").style.display="none";
+ const out = document.getElementById("teamsOutput");
+ out.style.display="grid";
+ out.innerHTML = renderTeam("Team A", result.a, result.assignA.assignment, result.avga, "team-a") +
+                 renderTeam("Team B", result.b, result.assignB.assignment, result.avgb, "team-b");
+ document.getElementById("diffChip").textContent = Math.round(result.gap).toLocaleString()+"점";
+
+ const exclOut = document.getElementById("excludedOutput");
+ if(excludedPlayers.length > 0){
+   exclOut.style.display = "block";
+   exclOut.innerHTML = `<div class="excluded-box"><strong>☕ 이번 경기 휴식(제외) 인원 (${excludedPlayers.length}명):</strong> ${excludedPlayers.map(p => esc(p.name)).join(", ")} <span style="margin-left:auto; color:var(--green); font-weight:800;">(※ 이 인원은 다음 판 100% 우선 출전됩니다)</span></div>`;
+ } else {
+   exclOut.style.display = "none";
+ }
+
+ document.getElementById("matchActions").style.display = "flex";
+ if(priorityPlayers.length > 0){
+   msg("noticeBox", `직전 경기 휴식자 ${priorityPlayers.length}명(${priorityPlayers.map(p=>p.name).join(", ")})이 100% 우선 출전된 최적의 밸런스 조합입니다!`);
+ } else {
+   msg("noticeBox", "스마트 밸런스로 최적의 팀이 구성되었습니다.");
+ }
+}
+
+document.getElementById("reshuffleBtn").addEventListener("click", () => {
+  if(lastValidPlayersCache.length < 10){
+    alert("먼저 팀 밸런스 생성을 한 번 이상 실행해주세요.");
+    return;
+  }
+  generateTeams();
+  msg("noticeBox", "다른 조합으로 다시 추첨되었습니다!");
+});
+
+document.getElementById("copyResultBtn").addEventListener("click", () => {
+  if(!currentMatchData) return;
+  const mapName = document.getElementById("mapName").textContent;
+  
+  let text = `🎮 [ 오버워치 2 내전 매치룸 결과 ]\n📍 전장: ${mapName}\n\n`;
+  
+  ["teamA", "teamB"].forEach(tKey => {
+    const title = tKey === "teamA" ? "Team A" : "Team B";
+    const team = currentMatchData[tKey];
+    const assign = currentMatchData[tKey === "teamA" ? "assignA" : "assignB"];
+    
+    let membersFormatted = team.map((p, i) => {
+      const role = assign[i];
+      return ` - ${role}: ${p.name}`;
+    }).join("\n");
+    
+    text += `🔹 ${title}\n${membersFormatted}\n\n`;
+  });
+  
+  navigator.clipboard.writeText(text).then(() => {
+    msg("noticeBox", "📋 디스코드/톡방용 팀 결과가 클립보드에 복사되었습니다!");
+  }).catch(() => {
+    alert("복사 실패: 브라우저 권한을 확인해주세요.");
+  });
+});
+
+function resetTeamResults(){
+ currentMatchData = null;
+ lastExcludedNames = [];
+ document.getElementById("emptyState").style.display="block";
+ const out = document.getElementById("teamsOutput");
+ out.style.display="none";
+ out.innerHTML = "";
+ document.getElementById("excludedOutput").style.display = "none";
+ document.getElementById("matchActions").style.display = "none";
+ document.getElementById("diffChip").textContent = "—";
+ msg("noticeBox", "팀 편성 결과 및 휴식자 목록이 초기화되었습니다.");
+}
+
+function recordMatchWin(winningTeamKey){
+  if(!currentMatchData) return;
+  const streaks = getStreaks();
+  
+  const winningPlayers = currentMatchData[winningTeamKey];
+  const winningAssign = currentMatchData[winningTeamKey === "teamA" ? "assignA" : "assignB"];
+  
+  const losingTeamKey = winningTeamKey === "teamA" ? "teamB" : "teamA";
+  const losingPlayers = currentMatchData[losingTeamKey];
+  const losingAssign = currentMatchData[losingTeamKey === "teamA" ? "assignA" : "assignB"];
+
+  winningPlayers.forEach((p, idx) => {
+    const role = winningAssign[idx];
+    if(!streaks[p.name]) streaks[p.name] = {};
+    if(!streaks[p.name][role]) streaks[p.name][role] = { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0 };
+
+    streaks[p.name][role].streak += 1;
+    streaks[p.name][role].wins += 1;
+    streaks[p.name][role].slump = 0;
+
+    if(streaks[p.name][role].streak >= 2){
+      streaks[p.name][role].bonusPool = (streaks[p.name][role].streak - 1) * 80;
+    }
+  });
+
+  losingPlayers.forEach((p, idx) => {
+    const role = losingAssign[idx];
+    if(!streaks[p.name]) streaks[p.name] = {};
+    if(!streaks[p.name][role]) streaks[p.name][role] = { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0 };
+
+    streaks[p.name][role].streak = 0;
+    streaks[p.name][role].losses += 1;
+
+    if(streaks[p.name][role].bonusPool > 0){
+      streaks[p.name][role].bonusPool -= 80;
+      if(streaks[p.name][role].bonusPool < 0) streaks[p.name][role].bonusPool = 0;
+    } else {
+      streaks[p.name][role].slump += 1;
+    }
+  });
+
+  saveStreaks(streaks);
+  msg("noticeBox", `${winningTeamKey === "teamA" ? "Team A" : "Team B"} 승리가 기록되었습니다! (+80점 / -60점 적용)`);
+}
+
+function renderStreaksTable(){
+  const streaks = getStreaks();
+  const tbody = document.getElementById("streaksBody");
+  
+  const playersBaseMap = {};
+  [...body.querySelectorAll("tr")].forEach(tr => {
+    const name = tr.querySelector(".p-name").value.trim();
+    if(!name) return;
+    playersBaseMap[name] = {};
+    const selects = tr.querySelectorAll("select");
+    roles.forEach((r, idx) => {
+      const tName = selects[idx*2].value;
+      const sub = Number(selects[idx*2+1].value);
+      const found = validTiers.find(x=>x[0]===tName);
+      if(found && tName !== "플레이 안 함"){
+        const [, tBase, step] = found;
+        playersBaseMap[name][r] = tBase + (5 - sub) * step;
+      }
+    });
+  });
+
+  let rowsData = [];
+  Object.entries(streaks).forEach(([name, roleObj]) => {
+    Object.entries(roleObj).forEach(([role, data]) => {
+      rowsData.push({ name, role, data });
+    });
+  });
+
+  if(rowsData.length === 0){
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--muted);">기록된 전적이 없습니다.</td></tr>`;
+    return;
+  }
+
+  rowsData.sort((a, b) => b.data.wins - a.data.wins || ((b.data.wins/(b.data.wins+b.data.losses))||0) - ((a.data.wins/(a.data.wins+a.data.losses))||0));
+
+  tbody.innerHTML = rowsData.map(({ name, role, data }, idx) => {
+    let rankBadge = `${idx + 1}`;
+    if(idx === 0) rankBadge = "🥇 1";
+    else if(idx === 1) rankBadge = "🥈 2";
+    else if(idx === 2) rankBadge = "🥉 3";
+
+    let statusText = "";
+    let bonusText = "";
+    let netBonus = (data.bonusPool || 0) - (data.slump || 0) * 60;
+
+    if(data.streak > 0){
+      statusText = `<span style="color:var(--orange); font-weight:800;">🔥 ${data.streak} 연승 중</span>`;
+    } else if(data.slump > 0 || (data.bonusPool !== undefined && data.bonusPool < 0)){
+      statusText = `<span style="color:var(--red); font-weight:800;">❄️ 패배 누적</span>`;
+    } else {
+      statusText = `<span style="color:var(--muted);">기록 없음</span>`;
+    }
+
+    if(netBonus > 0){
+      bonusText = `<span style="color:var(--green); font-weight:800;">+${netBonus}점</span>`;
+    } else if(netBonus < 0){
+      bonusText = `<span style="color:var(--red); font-weight:800;">${netBonus}점</span>`;
+    } else {
+      bonusText = `0점`;
+    }
+
+    const totalGames = (data.wins || 0) + (data.losses || 0);
+    const winRate = totalGames > 0 ? Math.round(((data.wins || 0) / totalGames) * 100) : 0;
+    const baseScore = playersBaseMap[name]?.[role] !== undefined ? playersBaseMap[name][role] : 1800;
+    const finalScore = baseScore + netBonus;
+
+    return `<tr>
+      <td>${rankBadge}</td>
+      <td><strong>${esc(name)}</strong></td>
+      <td><span class="tag match">${role}</span></td>
+      <td>${statusText}</td>
+      <td>${data.wins || 0}승 ${data.losses || 0}패 (${winRate}%)</td>
+      <td>${baseScore.toLocaleString()}점</td>
+      <td>${bonusText}</td>
+      <td><strong style="color:var(--orange);">${finalScore.toLocaleString()}점 (${scoreToTierString(finalScore)})</strong></td>
+    </tr>`;
+  }).join("");
+}
+
+document.getElementById("winTeamABtn").addEventListener("click", () => recordMatchWin("teamA"));
+document.getElementById("winTeamBBtn").addEventListener("click", () => recordMatchWin("teamB"));
+document.getElementById("resetStreaksBtn").addEventListener("click", () => {
+  if(confirm(`[${getCurrentDayKey()}] 포지션별 기록을 초기화하시겠습니까?`)){
+    const allDays = getAllDaysData();
+    delete allDays[getCurrentDayKey()];
+    if(Object.keys(allDays).length === 0) allDays["1일차 (오늘)"] = {};
+    saveAllDaysData(allDays);
+    initDaySelect();
+    updateAllRowPreviews();
+    renderStreaksTable();
+    updateScoreChart();
+    msg("noticeBox", "해당 일자의 기록이 초기화되었습니다.");
+  }
+});
+
+// 📊 07 섹션: 그래프 관련 함수들
+function updateGraphMemberSelect(){
+  const sel = document.getElementById("graphMemberSelect");
+  if(!sel) return;
+  const names = [...new Set([...[...body.querySelectorAll("tr")].map(tr => tr.querySelector(".p-name")?.value.trim()).filter(Boolean)])];
+  
+  const currentVal = sel.value;
+  sel.innerHTML = names.map(n => `<option value="${n}" ${n === currentVal ? "selected" : ""}>${n}</option>`).join("");
+  
+  sel.removeEventListener("change", updateScoreChart);
+  sel.addEventListener("change", updateScoreChart);
+  updateScoreChart();
+}
+
+function updateScoreChart(){
+  const ctx = document.getElementById("scoreChart");
+  if(!ctx) return;
+
+  const memberName = document.getElementById("graphMemberSelect").value;
+  const allDays = getAllDaysData();
+  const dayKeys = Object.keys(allDays);
+
+  const datasetsMap = {
+    "탱커": { label: "탱커 평점", data: [], borderColor: "#ff8a3d", backgroundColor: "rgba(255,138,61,0.2)", tension: 0.1 },
+    "딜러": { label: "딜러 평점", data: [], borderColor: "#59b8ff", backgroundColor: "rgba(89,184,255,0.2)", tension: 0.1 },
+    "힐러": { label: "힐러 평점", data: [], borderColor: "#63d6a3", backgroundColor: "rgba(99,214,163,0.2)", tension: 0.1 }
+  };
+
+  let baseScores = { "탱커": 1800, "딜러": 1800, "힐러": 1800 };
+  [...body.querySelectorAll("tr")].forEach(tr => {
+    const name = tr.querySelector(".p-name")?.value.trim();
+    if(name === memberName){
+      const selects = tr.querySelectorAll("select");
+      roles.forEach((r, idx) => {
+        const tName = selects[idx*2].value;
+        const sub = Number(selects[idx*2+1].value);
+        const found = validTiers.find(x=>x[0]===tName);
+        if(found && tName !== "플레이 안 함"){
+          const [, tBase, step] = found;
+          baseScores[r] = tBase + (5 - sub) * step;
+        }
+      });
+    }
+  });
+
+  dayKeys.forEach(day => {
+    const dayData = allDays[day]?.[memberName] || {};
+    roles.forEach(role => {
+      const roleRecord = dayData[role];
+      let netBonus = 0;
+      if(roleRecord){
+        netBonus = (roleRecord.bonusPool || 0) - (roleRecord.slump || 0) * 60;
+      }
+      const finalScore = (baseScores[role] || 1800) + netBonus;
+      datasetsMap[role].data.push(finalScore);
+    });
+  });
+
+  const chartData = {
+    labels: dayKeys,
+    datasets: [datasetsMap["탱커"], datasetsMap["딜러"], datasetsMap["힐러"]]
+  };
+
+  if(scoreChartInstance){
+    scoreChartInstance.data = chartData;
+    scoreChartInstance.update();
+  } else {
+    scoreChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            grid: { color: "#2a3445" },
+            ticks: { color: "#9ba7ba" }
+          },
+          x: {
+            grid: { color: "#2a3445" },
+            ticks: { color: "#9ba7ba" }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { color: "#f4f6fb", font: { family: "inherit" } }
+          }
+        }
+      }
+    });
+  }
+}
+
+// 🎲 맵 선택 및 모드별 랜덤 추첨 로직
+function setupMaps(preserveIndex = null){
+ const sel = document.getElementById("mapSelect");
+ if(!sel) return;
+ const currentVal = preserveIndex !== null ? preserveIndex : Number(sel.value);
+ const filterMode = document.getElementById("modeFilterSelect").value;
+ const modes = ["쟁탈", "혼합", "호위", "밀기", "플래시포인트", "격돌"];
+ let html = "";
+ 
+ modes.forEach(mode => {
+  if(filterMode !== "전체" && filterMode !== mode) return;
+  const filtered = maps.filter(m => m.mode === mode);
+  if(filtered.length > 0){
+   html += `<optgroup label="[${mode} 모드]">`;
+   filtered.forEach(m => {
+    const originalIndex = maps.indexOf(m);
+    const isPlayed = playedMapIndices.includes(originalIndex);
+    const isCurrent = (originalIndex === currentVal);
+    const isDisabled = isPlayed && !isCurrent;
+    const playedLabel = isPlayed ? " (플레이 완료)" : "";
+    const disabledAttr = isDisabled ? "disabled" : "";
+    html += `<option value="${originalIndex}" ${disabledAttr}>${m.name}${playedLabel}</option>`;
+   });
+   html += `</optgroup>`;
+  }
+ });
+ sel.innerHTML = html;
+ 
+ if(currentVal !== null && !isNaN(currentVal) && sel.querySelector(`option[value="${currentVal}"]`)){
+   sel.value = currentVal;
+ } else {
+   const availableOpt = sel.querySelector("option:not([disabled])");
+   if(availableOpt) sel.value = availableOpt.value;
+ }
+ 
+ sel.removeEventListener("change", handleMapChange);
+ sel.addEventListener("change", handleMapChange);
+ showMap();
+}
+
+document.getElementById("modeFilterSelect").addEventListener("change", () => setupMaps());
+
+function handleMapChange(){
+ const sel = document.getElementById("mapSelect");
+ const idx = Number(sel.value);
+ if(!isNaN(idx) && !playedMapIndices.includes(idx)){
+   playedMapIndices.push(idx);
+ }
+ setupMaps(idx);
+}
+
+function showMap(){
+ const sel = document.getElementById("mapSelect");
+ const m = maps[Number(sel.value)];
+ if(m){
+   document.getElementById("mapName").textContent = m.name;
+   document.getElementById("mapMode").textContent = `${m.mode} 모드`;
+ } else {
+   document.getElementById("mapName").textContent = "해당 모드 맵 모두 완료";
+   document.getElementById("mapMode").textContent = "초기화 또는 모드 변경 필요";
+ }
+}
+
+function randomMap(){
+ const availableOptions = [...document.querySelectorAll("#mapSelect option:not([disabled])")];
+ if(availableOptions.length === 0){
+   alert("선택된 조건의 모든 맵을 플레이했습니다! '플레이한 맵 초기화'를 눌러주세요.");
+   return;
+ }
+ const randomOpt = availableOptions[Math.floor(Math.random() * availableOptions.length)];
+ const idx = Number(randomOpt.value);
+ 
+ if(!playedMapIndices.includes(idx)){
+   playedMapIndices.push(idx);
+ }
+ 
+ setupMaps(idx);
+}
+
+document.getElementById("randomMapBtn").addEventListener("click", randomMap);
+
+function resetPlayedMaps(){
+ playedMapIndices = [];
+ setupMaps();
+ msg("noticeBox", "플레이한 맵 기록이 초기화되었습니다. 모든 맵을 다시 선택할 수 있습니다.");
+}
+
+function heroOptions(selected=""){
+ const roleGroups = ["탱커", "딜러", "힐러"];
+ let html = `<option value="">선택 안 함</option>`;
+ roleGroups.forEach(r => {
+  const groupHeroes = heroes.filter(h => h.role === r);
+  html += `<optgroup label="[${r}군]">`;
+  groupHeroes.forEach(h => {
+   const isSel = h.name === selected ? "selected" : "";
+   html += `<option value="${esc(h.name)}" ${isSel}>${esc(h.name)}</option>`;
+  });
+  html += `</optgroup>`;
+ });
+ return html;
+}
+
+function setupDraft(){
+ const grid=document.getElementById("draftGrid");if(!grid)return;grid.innerHTML="";
+ for(const team of ["A","B"]){
+  const card=document.createElement("div");
+  card.className="draft-team";
+  card.innerHTML=`<div class="draft-title"><h3>Team ${team}</h3><span class="section-note">BAN 2</span></div>
+  <div class="draft-content">
+    <div class="slot-group">
+      <label>영웅 밴 (2명)</label>
+      <div class="slot-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        ${[0,1].map(i=>`<select class="draft-slot" data-team="${team}" data-kind="ban" data-slot="${i}">${heroOptions()}</select>`).join("")}
+      </div>
+    </div>
+  </div>`;
+  grid.appendChild(card);
+ }
+ grid.addEventListener("change",handleDraftChange);refreshDraftStatus();
+}
+
+function handleDraftChange(e){
+ if(!e.target.classList.contains("draft-slot"))return;
+ const current=e.target.value;
+ if(current){
+  const duplicates=[...document.querySelectorAll(".draft-slot")].filter(s=>s!==e.target&&s.value===current);
+  if(duplicates.length){
+   e.target.value="";
+   msg("noticeBox",`${current} 영웅 중복 밴 불가`);
+   setTimeout(()=>msg("noticeBox",""),3000);
+  }
+ }
+ refreshDraftStatus();
+}
+
+function refreshDraftStatus(){
+ const slots=[...document.querySelectorAll(".draft-slot")];
+ const filled=slots.filter(s=>s.value).length;
+ const statusEl = document.getElementById("draftStatus");
+ if(statusEl) statusEl.textContent=`밴 선택 현황: ${filled}/4 슬롯 완료`;
+}
+
+function resetDraft(){
+ document.querySelectorAll(".draft-slot").forEach(s=>s.value="");
+ refreshDraftStatus();
+}
+
+function randomDraft(){
+ resetDraft();
+ const heroNames=heroes.map(h=>h.name);
+ const available=heroNames.slice().sort(()=>Math.random()-.5);
+ document.querySelectorAll(".draft-slot").forEach((s,i)=>s.value=available[i]||"");
+ refreshDraftStatus();
+}
+
+const LIB_KEY="ow2MatchRoomMemberLibrary_v9";
+function blankMember(){return {name:"",tank:["골드",3],dps:["골드",3],supp:["골드",3],selected:false}}
+
+// 전체 멤버 보관함용 (예상 환산 티어 미리보기 없이 셀렉트 박스만 구성)
+function createLibraryTierSelectHTML(roleName){
+ return `<div class="tier-group" data-role="${roleName}">
+   <select class="tier">${tierOpts}</select>
+   <select class="sub sub-tier">${subtierOpts}</select>
+ </div>`;
+}
+
+function renderLibrary(data){
+ const tbody=document.getElementById("libraryBody");if(!tbody)return;tbody.innerHTML="";
+ const libData = (data && data.length) ? data : defaultMemberLibrary;
+ 
+ libData.forEach((m,i)=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td class="pick-col"><input type="checkbox" class="lib-pick" ${m.selected?"checked":""}></td>
+  <td>${String(i+1).padStart(2,"0")}</td>
+  <td><input class="lib-name" maxlength="30" placeholder="닉네임" value="${esc(m.name||"")}"></td>
+  <td>${createLibraryTierSelectHTML("탱커")}</td>
+  <td>${createLibraryTierSelectHTML("딜러")}</td>
+  <td>${createLibraryTierSelectHTML("힐러")}</td>
+  <td>
+    <button type="button" class="btn-primary lib-single-add" style="padding:6px 10px; font-size:11px; margin-right:4px;">참가 등록</button>
+    <button type="button" class="btn-secondary lib-remove" style="padding:6px 8px; font-size:11px;">비우기</button>
+  </td>`;
+  tbody.appendChild(tr);
+
+  const selects = tr.querySelectorAll("select");
+  if(m.tank){ selects[0].value=m.tank[0]; selects[1].value=String(m.tank[1]); }
+  if(m.dps){ selects[2].value=m.dps[0]; selects[3].value=String(m.dps[1]); }
+  if(m.supp){ selects[4].value=m.supp[0]; selects[5].value=String(m.supp[1]); }
+
+  tr.querySelectorAll("input,select").forEach(el=>el.addEventListener("change",updateLibraryCount));
+
+  tr.querySelector(".lib-single-add").addEventListener("click",()=>{
+   const name = tr.querySelector(".lib-name").value.trim();
+   if(!name){ alert("이름을 입력해 주세요."); return; }
+   const sels = tr.querySelectorAll("select");
+   const memberData = [
+     name,
+     [sels[0].value, Number(sels[1].value)],
+     [sels[2].value, Number(sels[3].value)],
+     [sels[4].value, Number(sels[5].value)]
+   ];
+   addPlayerRow(memberData);
+   msg("libraryNotice",`[${memberData[0]}] 님이 참가자 명단에 추가되었습니다.`);
+  });
+
+  tr.querySelector(".lib-remove").addEventListener("click",()=>{
+   tr.querySelector(".lib-pick").checked=false;
+   tr.querySelector(".lib-name").value="";
+   updateLibraryCount();
+  });
+ });
+ updateLibraryCount();
+}
+
+function readLibraryRows(){
+ return [...document.querySelectorAll("#libraryBody tr")].map(tr=>{
+  const sels = tr.querySelectorAll("select");
+  return {
+   name: tr.querySelector(".lib-name").value,
+   tank: [sels[0].value, Number(sels[1].value)],
+   dps: [sels[2].value, Number(sels[3].value)],
+   supp: [sels[4].value, Number(sels[5].value)],
+   selected: tr.querySelector(".lib-pick").checked
+  };
+ });
+}
+
+function updateLibraryCount(){
+ const rows=readLibraryRows(),filled=rows.filter(m=>m.name).length,selected=rows.filter(m=>m.selected&&m.name).length;
+ const countEl = document.getElementById("libraryCount");
+ if(countEl) countEl.textContent=`등록 ${filled}명 · 참가 선택 ${selected}명`;
+}
+
+function saveLibrary(show=true){
+ const data=readLibraryRows();
+ localStorage.setItem(LIB_KEY,JSON.stringify(data));
+ if(show) msg("libraryNotice","보관함이 저장되었습니다.");
+ updateLibraryCount();
+}
+
+function loadLibrary(show=true){
+ const raw=localStorage.getItem(LIB_KEY);
+ if(!raw){
+  renderLibrary(defaultMemberLibrary);
+  if(show)msg("libraryNotice","기본 17명 명단을 불러왔습니다.");
+  return true;
+ }
+ try{renderLibrary(JSON.parse(raw));if(show)msg("libraryNotice","저장된 보관함을 불러왔습니다.");return true}
+ catch(e){return false}
+}
+
+document.getElementById("backupBtn").addEventListener("click", () => {
+  const backupData = {
+    library: readLibraryRows(),
+    days: getAllDaysData(),
+    roster: [...body.querySelectorAll("tr")].map(tr => {
+      const name = tr.querySelector(".p-name").value.trim();
+      const sels = tr.querySelectorAll("select");
+      return [name, [sels[0].value, Number(sels[1].value)], [sels[2].value, Number(sels[3].value)], [sels[4].value, Number(sels[5].value)]];
+    })
+  };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute("href", dataStr);
+  dlAnchor.setAttribute("download", `ow2_matchroom_backup_${new Date().toISOString().slice(0,10)}.json`);
+  document.body.appendChild(dlAnchor);
+  dlAnchor.click();
+  dlAnchor.remove();
+  msg("libraryNotice", "백업 파일이 성공적으로 다운로드되었습니다!");
+});
+
+document.getElementById("restoreFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    try {
+      const parsed = JSON.parse(event.target.result);
+      if(parsed.library) {
+        localStorage.setItem(LIB_KEY, JSON.stringify(parsed.library));
+        renderLibrary(parsed.library);
+      }
+      if(parsed.days) {
+        saveAllDaysData(parsed.days);
+        initDaySelect();
+      }
+      if(parsed.roster) {
+        localStorage.setItem("ow2MatchRoomRoster", JSON.stringify(parsed.roster));
+        buildRows(parsed.roster);
+      }
+      updateAllRowPreviews();
+      renderStreaksTable();
+      updateGraphMemberSelect();
+      msg("libraryNotice", "📂 백업 데이터가 성공적으로 복원되었습니다!");
+    } catch(err) {
+      alert("올바른 백업 JSON 파일이 아닙니다.");
+    }
+  };
+  reader.readAsText(file);
+});
+
+function useSelectedMembers(){
+ const selected=readLibraryRows().filter(m=>m.selected&&m.name);
+ if(selected.length === 0){
+  msg("libraryError","선택된 멤버가 없습니다.");
+  return;
+ }
+ 
+ selected.forEach((m)=>{
+  addPlayerRow([m.name, m.tank, m.dps, m.supp]);
+ });
+
+ msg("noticeBox",`선택한 ${selected.length}명이 참가자 명단 하단에 추가되었습니다.`);
+}
+
+document.getElementById("addPlayerRowBtn").addEventListener("click", () => addPlayerRow());
+document.getElementById("sampleBtn").addEventListener("click",()=>{
+ const top17 = defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]);
+ buildRows(top17);
+ msg("noticeBox","전체 17명을 불러왔습니다.");
+});
+document.getElementById("saveBtn").addEventListener("click",()=>saveRoster(true));
+document.getElementById("loadBtn").addEventListener("click",()=>loadRoster(true));
+document.getElementById("clearSaveBtn").addEventListener("click",()=>{if(confirm("저장 데이터를 삭제하시겠습니까?")){localStorage.removeItem("ow2MatchRoomRoster");msg("noticeBox","삭제되었습니다.");}});
+document.getElementById("generateBtn").addEventListener("click",generateTeams);
+document.getElementById("resetTeamsBtn").addEventListener("click", resetTeamResults);
+document.getElementById("resetPlayedMapsBtn").addEventListener("click",resetPlayedMaps);
+document.getElementById("resetDraftBtn").addEventListener("click",resetDraft);
+document.getElementById("randomDraftBtn").addEventListener("click",randomDraft);
+
+document.getElementById("addMemberBtn").addEventListener("click",()=>{
+ const data=readLibraryRows(); data.push(blankMember()); renderLibrary(data);
+});
+document.getElementById("saveLibraryBtn").addEventListener("click",()=>saveLibrary(true));
+document.getElementById("loadLibraryBtn").addEventListener("click",()=>{
+ if(confirm("기본 17명 데이터로 보관함을 초기화할까요?")){
+  localStorage.removeItem(LIB_KEY);
+  loadLibrary(true);
+ }
+});
+document.getElementById("useSelectedBtn").addEventListener("click",useSelectedMembers);
+
+loadLibrary(false);
+const default17 = defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]);
+buildRows(default17);
+setupMaps(); setupDraft();
+initDaySelect();
+updateAllRowPreviews();
+renderStreaksTable();
+updateGraphMemberSelect();
+</script>
+</body>
+</html>
