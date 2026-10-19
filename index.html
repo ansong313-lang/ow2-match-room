@@ -78,6 +78,7 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
   <div class="results-top">
     <div><h2>03 · 팀 편성 결과</h2><div class="section-note">각 팀은 탱커 1 · 딜러 2 · 힐러 2로 구성되며, 탱커 체급 격차가 우선 제한됩니다.</div></div>
     <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <button class="btn-secondary" id="loadPrevTeamBtn" style="padding:8px 12px; font-size:12px;">📂 저장된 팀 편성 불러오기</button>
       <button class="btn-secondary" id="reshuffleBtn" style="padding:8px 12px; font-size:12px;">🔀 다른 조합으로 재추첨</button>
       <button class="btn-danger" id="resetTeamsBtn" style="padding:8px 12px; font-size:12px;">팀 편성 초기화</button>
       <div class="score-chip">팀 평균 점수 차이 <strong id="diffChip">—</strong></div>
@@ -428,9 +429,14 @@ function getScore(tierName, sub, name, role){
  let baseScore = tBase + (5 - sub) * step;
  
  const streaks = getStreaks();
- const roleData = streaks[name]?.[role] || { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0 };
+ const roleData = streaks[name]?.[role] || { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0, lastRoleCount: 0 };
  
  let bonusScore = (roleData.bonusPool || 0) - (roleData.slump || 0) * 60;
+
+ // 동일 포지션 3연속 이상 걸리지 않도록 페널티(-90000점 부여하여 배정 회피)
+ if(roleData.lastRoleCount >= 2 && roleData.activeLastRole === role){
+   return { total: -99999, base: baseScore, bonus: bonusScore };
+ }
 
  return { total: baseScore + bonusScore, base: baseScore, bonus: bonusScore };
 }
@@ -655,31 +661,62 @@ function generateTeams(){
 
  currentMatchData = {
    teamA: result.a, assignA: result.assignA.assignment,
-   teamB: result.b, assignB: result.assignB.assignment
+   teamB: result.b, assignB: result.assignB.assignment,
+   excluded: excludedPlayers
  };
 
- document.getElementById("emptyState").style.display="none";
- const out = document.getElementById("teamsOutput");
- out.style.display="grid";
- out.innerHTML = renderTeam("Team A", result.a, result.assignA.assignment, result.avga, "team-a") +
-                 renderTeam("Team B", result.b, result.assignB.assignment, result.avgb, "team-b");
- document.getElementById("diffChip").textContent = Math.round(result.gap).toLocaleString()+"점";
+ // 로컬 스토리지에 저장하여 새로고침 시 유지 및 수동 불러오기 지원
+ localStorage.setItem("ow2MatchRoomCurrentMatchData", JSON.stringify(currentMatchData));
 
- const exclOut = document.getElementById("excludedOutput");
- if(excludedPlayers.length > 0){
-   exclOut.style.display = "block";
-   exclOut.innerHTML = `<div class="excluded-box"><strong>☕ 이번 경기 휴식(제외) 인원 (${excludedPlayers.length}명):</strong> ${excludedPlayers.map(p => esc(p.name)).join(", ")} <span style="margin-left:auto; color:var(--green); font-weight:800;">(※ 이 인원은 다음 판 100% 우선 출전됩니다)</span></div>`;
- } else {
-   exclOut.style.display = "none";
- }
-
- document.getElementById("matchActions").style.display = "flex";
- if(priorityPlayers.length > 0){
-   msg("noticeBox", `직전 경기 휴식자 ${priorityPlayers.length}명(${priorityPlayers.map(p=>p.name).join(", ")})이 100% 우선 출전된 최적의 밸런스 조합입니다!`);
- } else {
-   msg("noticeBox", "스마트 밸런스로 최적의 팀이 구성되었습니다.");
- }
+ renderCurrentMatchView();
 }
+
+function renderCurrentMatchView(){
+  if(!currentMatchData) return;
+  document.getElementById("emptyState").style.display="none";
+  const out = document.getElementById("teamsOutput");
+  out.style.display="grid";
+  out.innerHTML = renderTeam("Team A", currentMatchData.teamA, currentMatchData.assignA, calculateTeamAvg(currentMatchData.teamA, currentMatchData.assignA), "team-a") +
+                  renderTeam("Team B", currentMatchData.teamB, currentMatchData.assignB, calculateTeamAvg(currentMatchData.teamB, currentMatchData.assignB), "team-b");
+  
+  const avgA = calculateTeamAvg(currentMatchData.teamA, currentMatchData.assignA);
+  const avgB = calculateTeamAvg(currentMatchData.teamB, currentMatchData.assignB);
+  document.getElementById("diffChip").textContent = Math.round(Math.abs(avgA - avgB)).toLocaleString()+"점";
+
+  const exclOut = document.getElementById("excludedOutput");
+  if(currentMatchData.excluded && currentMatchData.excluded.length > 0){
+    exclOut.style.display = "block";
+    exclOut.innerHTML = `<div class="excluded-box"><strong>☕ 이번 경기 휴식(제외) 인원 (${currentMatchData.excluded.length}명):</strong> ${currentMatchData.excluded.map(p => esc(p.name)).join(", ")} <span style="margin-left:auto; color:var(--green); font-weight:800;">(※ 이 인원은 다음 판 100% 우선 출전됩니다)</span></div>`;
+  } else {
+    exclOut.style.display = "none";
+  }
+
+  document.getElementById("matchActions").style.display = "flex";
+}
+
+function calculateTeamAvg(team, assign){
+  let sum = 0;
+  team.forEach((p, idx) => {
+    sum += p.roles[assign[idx]].total;
+  });
+  return sum / 5;
+}
+
+// 📂 저장된 팀 편성 결과 수동 불러오기 버튼 이벤트
+document.getElementById("loadPrevTeamBtn").addEventListener("click", () => {
+  const savedMatch = localStorage.getItem("ow2MatchRoomCurrentMatchData");
+  if(!savedMatch){
+    msg("noticeBox", "저장된 이전 팀 편성 결과가 없습니다.");
+    return;
+  }
+  try {
+    currentMatchData = JSON.parse(savedMatch);
+    renderCurrentMatchView();
+    msg("noticeBox", "저장된 이전 팀 편성 결과를 성공적으로 불러왔습니다!");
+  } catch(e){
+    msg("noticeBox", "저장된 팀 편성 데이터를 불러오는 중 오류가 발생했습니다.");
+  }
+});
 
 document.getElementById("reshuffleBtn").addEventListener("click", () => {
   if(lastValidPlayersCache.length < 10){
@@ -719,6 +756,7 @@ document.getElementById("copyResultBtn").addEventListener("click", () => {
 function resetTeamResults(){
  currentMatchData = null;
  lastExcludedNames = [];
+ localStorage.removeItem("ow2MatchRoomCurrentMatchData");
  document.getElementById("emptyState").style.display="block";
  const out = document.getElementById("teamsOutput");
  out.style.display="none";
@@ -740,6 +778,19 @@ function recordMatchWin(winningTeamKey){
   const losingPlayers = currentMatchData[losingTeamKey];
   const losingAssign = currentMatchData[losingTeamKey === "teamA" ? "assignA" : "assignB"];
 
+  function updateRoleStreak(playerObj, role) {
+    const name = playerObj.name;
+    if(!streaks[name]) streaks[name] = {};
+    if(!streaks[name][role]) streaks[name][role] = { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0, lastRoleCount: 0 };
+    
+    if(streaks[name].activeLastRole === role){
+      streaks[name].lastRoleCount = (streaks[name].lastRoleCount || 0) + 1;
+    } else {
+      streaks[name].activeLastRole = role;
+      streaks[name].lastRoleCount = 1;
+    }
+  }
+
   winningPlayers.forEach((p, idx) => {
     const role = winningAssign[idx];
     if(!streaks[p.name]) streaks[p.name] = {};
@@ -752,6 +803,7 @@ function recordMatchWin(winningTeamKey){
     if(streaks[p.name][role].streak >= 2){
       streaks[p.name][role].bonusPool = (streaks[p.name][role].streak - 1) * 80;
     }
+    updateRoleStreak(p, role);
   });
 
   losingPlayers.forEach((p, idx) => {
@@ -768,10 +820,11 @@ function recordMatchWin(winningTeamKey){
     } else {
       streaks[p.name][role].slump += 1;
     }
+    updateRoleStreak(p, role);
   });
 
   saveStreaks(streaks);
-  msg("noticeBox", `${winningTeamKey === "teamA" ? "Team A" : "Team B"} 승리가 기록되었습니다! (+80점 / -60점 적용)`);
+  msg("noticeBox", `${winningTeamKey === "teamA" ? "Team A" : "Team B"} 승리가 기록되었습니다! (동일 포지션 3연속 방지 적용됨)`);
 }
 
 function renderStreaksTable(){
@@ -1120,7 +1173,7 @@ function randomDraft(){
 const LIB_KEY="ow2MatchRoomMemberLibrary_v9";
 function blankMember(){return {name:"",tank:["골드",3],dps:["골드",3],supp:["골드",3],selected:false}}
 
-// 전체 멤버 보관함용 (예상 환산 티어 미리보기 없이 셀렉트 박스만 구성)
+// 전체 멤버 보관함용 (예상 환산 티어 없이 셀렉트 박스만 구성)
 function createLibraryTierSelectHTML(roleName){
  return `<div class="tier-group" data-role="${roleName}">
    <select class="tier">${tierOpts}</select>
@@ -1312,6 +1365,17 @@ initDaySelect();
 updateAllRowPreviews();
 renderStreaksTable();
 updateGraphMemberSelect();
+
+// 새로고침 시 저장된 팀 편성 결과 자동 복원
+const savedMatch = localStorage.getItem("ow2MatchRoomCurrentMatchData");
+if(savedMatch){
+  try {
+    currentMatchData = JSON.parse(savedMatch);
+    renderCurrentMatchView();
+  } catch(e){
+    localStorage.removeItem("ow2MatchRoomCurrentMatchData");
+  }
+}
 </script>
 </body>
 </html>
