@@ -63,7 +63,7 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
 </section>
 
 <section class="panel">
-  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단 (인원 제한 없음)</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 연승(+80)/연패(-60) 보정이 자동 적용됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button><button class="btn-secondary" id="sampleBtn">상위 14명 채우기</button><button class="btn-secondary" id="saveBtn">명단 저장</button><button class="btn-secondary" id="loadBtn">저장 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
+  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단 (인원 제한 없음)</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 직전 경기 포지션 연속 배정이 자동 방지됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button><button class="btn-secondary" id="sampleBtn">상위 14명 채우기</button><button class="btn-secondary" id="saveBtn">명단 저장</button><button class="btn-secondary" id="loadBtn">저장 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
   <div class="table-wrap">
     <table class="member-table">
       <thead><tr><th>#</th><th>이름</th><th>탱커 티어 (예상 환산)</th><th>딜러 티어 (예상 환산)</th><th>힐러 티어 (예상 환산)</th><th>삭제</th></tr></thead>
@@ -229,6 +229,7 @@ let playedMapIndices = [];
 let lastExcludedNames = [];
 let lastValidPlayersCache = []; 
 let scoreChartInstance = null;
+let lastAssignedRoles = {}; // 직전 경기 포지션 기록 저장 객체
 
 const STORAGE_PREFIX = "ow2MatchRoom_Days_v9";
 
@@ -429,16 +430,17 @@ function getScore(tierName, sub, name, role){
  let baseScore = tBase + (5 - sub) * step;
  
  const streaks = getStreaks();
- const roleData = streaks[name]?.[role] || { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0, lastRoleCount: 0 };
+ const roleData = streaks[name]?.[role] || { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0 };
  
  let bonusScore = (roleData.bonusPool || 0) - (roleData.slump || 0) * 60;
 
- // 동일 포지션 3연속 이상 걸리지 않도록 페널티(-90000점 부여하여 배정 회피)
- if(roleData.lastRoleCount >= 2 && roleData.activeLastRole === role){
-   return { total: -99999, base: baseScore, bonus: bonusScore };
+ // 직전 경기와 동일 포지션 연속 배정 방지 (특히 탱커 독점 완화를 위해 페널티 부여)
+ let rotationPenalty = 0;
+ if(lastAssignedRoles[name] === role){
+   rotationPenalty = role === "탱커" ? -500 : -300; // 탱커 연속 배정 억제를 위해 탱커에 더 큰 페널티 부여
  }
 
- return { total: baseScore + bonusScore, base: baseScore, bonus: bonusScore };
+ return { total: baseScore + bonusScore + rotationPenalty, base: baseScore, bonus: bonusScore };
 }
 
 function readPlayers(){
@@ -665,6 +667,11 @@ function generateTeams(){
    excluded: excludedPlayers
  };
 
+ // 이번 경기에서 배정된 포지션을 직전 기록(lastAssignedRoles)에 반영하여 다음 추첨 시 순환 유도
+ lastAssignedRoles = {};
+ result.a.forEach((p, i) => { lastAssignedRoles[p.name] = result.assignA.assignment[i]; });
+ result.b.forEach((p, i) => { lastAssignedRoles[p.name] = result.assignB.assignment[i]; });
+
  // 로컬 스토리지에 저장하여 새로고침 시 유지 및 수동 불러오기 지원
  localStorage.setItem("ow2MatchRoomCurrentMatchData", JSON.stringify(currentMatchData));
 
@@ -756,6 +763,7 @@ document.getElementById("copyResultBtn").addEventListener("click", () => {
 function resetTeamResults(){
  currentMatchData = null;
  lastExcludedNames = [];
+ lastAssignedRoles = {};
  localStorage.removeItem("ow2MatchRoomCurrentMatchData");
  document.getElementById("emptyState").style.display="block";
  const out = document.getElementById("teamsOutput");
@@ -778,19 +786,6 @@ function recordMatchWin(winningTeamKey){
   const losingPlayers = currentMatchData[losingTeamKey];
   const losingAssign = currentMatchData[losingTeamKey === "teamA" ? "assignA" : "assignB"];
 
-  function updateRoleStreak(playerObj, role) {
-    const name = playerObj.name;
-    if(!streaks[name]) streaks[name] = {};
-    if(!streaks[name][role]) streaks[name][role] = { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0, lastRoleCount: 0 };
-    
-    if(streaks[name].activeLastRole === role){
-      streaks[name].lastRoleCount = (streaks[name].lastRoleCount || 0) + 1;
-    } else {
-      streaks[name].activeLastRole = role;
-      streaks[name].lastRoleCount = 1;
-    }
-  }
-
   winningPlayers.forEach((p, idx) => {
     const role = winningAssign[idx];
     if(!streaks[p.name]) streaks[p.name] = {};
@@ -803,7 +798,6 @@ function recordMatchWin(winningTeamKey){
     if(streaks[p.name][role].streak >= 2){
       streaks[p.name][role].bonusPool = (streaks[p.name][role].streak - 1) * 80;
     }
-    updateRoleStreak(p, role);
   });
 
   losingPlayers.forEach((p, idx) => {
@@ -820,11 +814,10 @@ function recordMatchWin(winningTeamKey){
     } else {
       streaks[p.name][role].slump += 1;
     }
-    updateRoleStreak(p, role);
   });
 
   saveStreaks(streaks);
-  msg("noticeBox", `${winningTeamKey === "teamA" ? "Team A" : "Team B"} 승리가 기록되었습니다! (동일 포지션 3연속 방지 적용됨)`);
+  msg("noticeBox", `${winningTeamKey === "teamA" ? "Team A" : "Team B"} 승리가 기록되었습니다!`);
 }
 
 function renderStreaksTable(){
@@ -1173,7 +1166,6 @@ function randomDraft(){
 const LIB_KEY="ow2MatchRoomMemberLibrary_v9";
 function blankMember(){return {name:"",tank:["골드",3],dps:["골드",3],supp:["골드",3],selected:false}}
 
-// 전체 멤버 보관함용 (예상 환산 티어 없이 셀렉트 박스만 구성)
 function createLibraryTierSelectHTML(roleName){
  return `<div class="tier-group" data-role="${roleName}">
    <select class="tier">${tierOpts}</select>
