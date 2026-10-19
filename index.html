@@ -392,6 +392,9 @@ function updateRowPreviews(tr){
     }
 
     let finalScore = baseScore + netBonus;
+    // 티어 체급 왜곡 방지 하한선 적용
+    if(finalScore < tBase) finalScore = tBase;
+
     let convertedTierStr = scoreToTierString(finalScore);
     
     let bonusStr = "";
@@ -432,14 +435,23 @@ function getScore(tierName, sub, name, role){
  const streaks = getStreaks();
  const roleData = streaks[name]?.[role] || { streak: 0, wins: 0, losses: 0, bonusPool: 0, slump: 0 };
  
- let bonusScore = (roleData.bonusPool || 0) - (roleData.slump || 0) * 60;
+ let bonusScore = (roleData.bonusPool || 0) - (roleData.slump || 0) * 40;
 
+ // 💡 오류 수정: 기존 -500/-300 과도한 페널티를 완화하고 순환 우선순위 용도로 조정 (-150 / -100)
  let rotationPenalty = 0;
  if(lastAssignedRoles[name] === role){
-   rotationPenalty = role === "탱커" ? -500 : -300;
+   rotationPenalty = role === "탱커" ? -150 : -100;
  }
 
- return { total: baseScore + bonusScore + rotationPenalty, base: baseScore, bonus: bonusScore };
+ let total = baseScore + bonusScore + rotationPenalty;
+
+ // 💡 핵심 오류 수정: 페널티나 연패 때문에 마스터 유저의 점수가 다이아몬드 구간(3500점 미만)으로 
+ // 내려앉아 티어 체급이 왜곡되는 것을 막기 위해 본인 티어의 최하점(tBase) 밑으로 떨어지지 않도록 하한선 방어
+ if(total < tBase){
+   total = tBase;
+ }
+
+ return { total, base: baseScore, bonus: bonusScore };
 }
 
 function readPlayers(){
@@ -482,11 +494,9 @@ function loadRoster(show=true){
  catch(e){return false}
 }
 
-// 마스터 2 이상(기준 점수 3800점 이상) 포지션을 보유한 고티어 플레이어 판별 함수
 function isHighTierPlayer(player){
   for(const role of ["탱커", "딜러", "힐러"]){
     const rData = player.roles[role];
-    // 마스터 2는 3500 + (5 - 2) * 100 = 3800점
     if(rData && rData.base >= 3800){
       return true;
     }
@@ -514,8 +524,6 @@ function findBest(players){
 
  const teamACombos = getCombinations(indices, 5);
 
- // 1단계: 마스터 2 이상 인원 팀당 최대 2명 제한 및 탱커 체급 격차 250점 이하 조건으로 탐색
- // 2단계(폴백): 조건 만족 조합이 없을 경우 제한을 완화하여 탐색
  for(let attempt = 0; attempt < 2; attempt++){
    const strictLimit = (attempt === 0);
    const maxTankDiff = strictLimit ? 250 : null;
