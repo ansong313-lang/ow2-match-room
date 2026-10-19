@@ -63,7 +63,7 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
 </section>
 
 <section class="panel">
-  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단 (인원 제한 없음)</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 직전 경기 포지션 연속 배정이 자동 방지됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button><button class="btn-secondary" id="sampleBtn">상위 14명 채우기</button><button class="btn-secondary" id="saveBtn">명단 저장</button><button class="btn-secondary" id="loadBtn">저장 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
+  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단 (인원 제한 없음)</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 마스터 2 이상 고티어 인원은 팀당 최대 2명으로 제한됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button><button class="btn-secondary" id="sampleBtn">상위 14명 채우기</button><button class="btn-secondary" id="saveBtn">명단 저장</button><button class="btn-secondary" id="loadBtn">저장 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
   <div class="table-wrap">
     <table class="member-table">
       <thead><tr><th>#</th><th>이름</th><th>탱커 티어 (예상 환산)</th><th>딜러 티어 (예상 환산)</th><th>힐러 티어 (예상 환산)</th><th>삭제</th></tr></thead>
@@ -215,9 +215,9 @@ const maps=[
 ];
 
 const heroes=[
-  {name:"D.Va", role:"탱커"}, {name:"둠피스트", role:"탱커"}, {name:"해저드", role:"탱커"}, {name:"정커퀸", role:"탱커"}, {name:"마우가", role:"탱커"}, {name:"오리사", role:"탱커"}, {name:"라마트라", role:"탱커"}, {name:"라인하르트", role:"탱커"}, {name:"로드호그", role:"탱커"}, {name:"시그마", role:"탱커"}, {name:"윈스턴", role:"탱커"}, {name:"레킹볼", role:"탱커"}, {name:"자리야", role:"탱커"}, {name:"도미나", role:"탱커"},
+  {name:"D.Va", role:"탱커"}, {name:"둠피스트", role:"탱커"}, {name:"해저드", role:"탱커"}, {name:"정커퀸", role:"탱커"}, {name:"마우가", role:"탱커"}, {name:"오리사", role:"탱커"}, {name:"라마트라", role:"탱커"}, {name:"라인하르트", role:"탱커"}, {name:"로드호그", role:"탱커"}, {name:"시그마", role:"탱커"}, {name:"윈스턴", role:"탱커"}, {name:"레킹볼", role:"탱커"}, {name:"자리야", role:"탱커"}, {name:"도미나", role:"탱커"}, {name:"D.mon", role:"탱커"}
   {name:"애쉬", role:"딜러"}, {name:"바스티온", role:"딜러"}, {name:"캐서디", role:"딜러"}, {name:"에코", role:"딜러"}, {name:"프레야", role:"딜러"}, {name:"겐지", role:"딜러"}, {name:"한조", role:"딜러"}, {name:"정크랫", role:"딜러"}, {name:"메이", role:"딜러"}, {name:"파라", role:"딜러"}, {name:"리퍼", role:"딜러"}, {name:"소전", role:"딜러"}, {name:"솔저: 76", role:"딜러"}, {name:"시메트라", role:"딜러"}, {name:"토르비욘", role:"딜러"}, {name:"트레이서", role:"딜러"}, {name:"벤처", role:"딜러"}, {name:"위도우메이커", role:"딜러"}, {name:"시온", role:"딜러"}, {name:"벤데타", role:"딜러"}, {name:"엠레", role:"딜러"}, {name:"안란", role:"딜러"}, {name:"시에라", role:"딜러"},
-  {name:"아나", role:"힐러"}, {name:"바티스트", role:"힐러"}, {name:"브리기테", role:"힐러"}, {name:"일리아리", role:"힐러"}, {name:"준오", role:"힐러"}, {name:"키리코", role:"힐러"}, {name:"라이프위버", role:"힐러"}, {name:"루시우", role:"힐러"}, {name:"메르시", role:"힐러"}, {name:"모이라", role:"힐러"}, {name:"주양", role:"힐러"}, {name:"젠야타", role:"힐러"}, {name:"독트린", role:"힐러"}, {name:"미즈키", role:"힐러"}, {name:"제트펫 캣", role:"힐러"}
+  {name:"아나", role:"힐러"}, {name:"바티스트", role:"힐러"}, {name:"브리기테", role:"힐러"}, {name:"일리아리", role:"힐러"}, {name:"주노", role:"힐러"}, {name:"키리코", role:"힐러"}, {name:"라이프위버", role:"힐러"}, {name:"루시우", role:"힐러"}, {name:"메르시", role:"힐러"}, {name:"모이라", role:"힐러"}, {name:"우양", role:"힐러"}, {name:"젠야타", role:"힐러"}, {name:"독트린", role:"힐러"}, {name:"미즈키", role:"힐러"}, {name:"제트펫 캣", role:"힐러"}
 ];
 
 const body=document.getElementById("playersBody");
@@ -229,7 +229,7 @@ let playedMapIndices = [];
 let lastExcludedNames = [];
 let lastValidPlayersCache = []; 
 let scoreChartInstance = null;
-let lastAssignedRoles = {}; // 직전 경기 포지션 기록 저장 객체
+let lastAssignedRoles = {};
 
 const STORAGE_PREFIX = "ow2MatchRoom_Days_v9";
 
@@ -434,10 +434,9 @@ function getScore(tierName, sub, name, role){
  
  let bonusScore = (roleData.bonusPool || 0) - (roleData.slump || 0) * 60;
 
- // 직전 경기와 동일 포지션 연속 배정 방지 (특히 탱커 독점 완화를 위해 페널티 부여)
  let rotationPenalty = 0;
  if(lastAssignedRoles[name] === role){
-   rotationPenalty = role === "탱커" ? -500 : -300; // 탱커 연속 배정 억제를 위해 탱커에 더 큰 페널티 부여
+   rotationPenalty = role === "탱커" ? -500 : -300;
  }
 
  return { total: baseScore + bonusScore + rotationPenalty, base: baseScore, bonus: bonusScore };
@@ -483,7 +482,19 @@ function loadRoster(show=true){
  catch(e){return false}
 }
 
-function findBest(players, maxTankDiff = 250){
+// 마스터 2 이상(기준 점수 3800점 이상) 포지션을 보유한 고티어 플레이어 판별 함수
+function isHighTierPlayer(player){
+  for(const role of ["탱커", "딜러", "힐러"]){
+    const rData = player.roles[role];
+    // 마스터 2는 3500 + (5 - 2) * 100 = 3800점
+    if(rData && rData.base >= 3800){
+      return true;
+    }
+  }
+  return false;
+}
+
+function findBest(players){
  let best = null;
  const indices = Array.from({length:10}, (_,i)=>i);
 
@@ -503,33 +514,47 @@ function findBest(players, maxTankDiff = 250){
 
  const teamACombos = getCombinations(indices, 5);
 
- for(const teamAIndices of teamACombos){
-  const setA = new Set(teamAIndices);
-  const teamBIndices = indices.filter(i => !setA.has(i));
+ // 1단계: 마스터 2 이상 인원 팀당 최대 2명 제한 및 탱커 체급 격차 250점 이하 조건으로 탐색
+ // 2단계(폴백): 조건 만족 조합이 없을 경우 제한을 완화하여 탐색
+ for(let attempt = 0; attempt < 2; attempt++){
+   const strictLimit = (attempt === 0);
+   const maxTankDiff = strictLimit ? 250 : null;
 
-  const teamA = teamAIndices.map(i => players[i]);
-  const teamB = teamBIndices.map(i => players[i]);
+   for(const teamAIndices of teamACombos){
+    const setA = new Set(teamAIndices);
+    const teamBIndices = indices.filter(i => !setA.has(i));
 
-  const assignA = optimizeLineup(teamA);
-  const assignB = optimizeLineup(teamB);
+    const teamA = teamAIndices.map(i => players[i]);
+    const teamB = teamBIndices.map(i => players[i]);
 
-  if(!assignA || !assignB) continue;
+    if(strictLimit){
+      const highTierCountA = teamA.filter(p => isHighTierPlayer(p)).length;
+      const highTierCountB = teamB.filter(p => isHighTierPlayer(p)).length;
+      if(highTierCountA > 2 || highTierCountB > 2) continue;
+    }
 
-  const tankAIndex = assignA.assignment.indexOf("탱커");
-  const tankBIndex = assignB.assignment.indexOf("탱커");
-  const tankAScore = teamA[tankAIndex].roles["탱커"].total;
-  const tankBScore = teamB[tankBIndex].roles["탱커"].total;
-  const tankDiff = Math.abs(tankAScore - tankBScore);
+    const assignA = optimizeLineup(teamA);
+    const assignB = optimizeLineup(teamB);
 
-  if(maxTankDiff !== null && tankDiff > maxTankDiff) continue;
+    if(!assignA || !assignB) continue;
 
-  const avga = assignA.totalScore / 5;
-  const avgb = assignB.totalScore / 5;
-  const gap = Math.abs(avga - avgb);
+    const tankAIndex = assignA.assignment.indexOf("탱커");
+    const tankBIndex = assignB.assignment.indexOf("탱커");
+    const tankAScore = teamA[tankAIndex].roles["탱커"].total;
+    const tankBScore = teamB[tankBIndex].roles["탱커"].total;
+    const tankDiff = Math.abs(tankAScore - tankBScore);
 
-  if(!best || gap < best.gap || (best && tankDiff < best.tankDiff)){
-   best = { a: teamA, b: teamB, assignA, assignB, avga, avgb, gap, tankDiff };
-  }
+    if(maxTankDiff !== null && tankDiff > maxTankDiff) continue;
+
+    const avga = assignA.totalScore / 5;
+    const avgb = assignB.totalScore / 5;
+    const gap = Math.abs(avga - avgb);
+
+    if(!best || gap < best.gap || (best && tankDiff < best.tankDiff)){
+     best = { a: teamA, b: teamB, assignA, assignB, avga, avgb, gap, tankDiff };
+    }
+   }
+   if(best) break;
  }
  return best;
 }
@@ -638,7 +663,7 @@ function generateTeams(){
      candidate10 = [...priorityPlayers, ...shuffledNormal.slice(0, needed)];
    }
 
-   const res = findBest(candidate10, 250);
+   const res = findBest(candidate10);
    if(res){
      result = res;
      matchPlayers = candidate10;
@@ -650,7 +675,7 @@ function generateTeams(){
    let shuffledNormal = [...normalPlayers].sort(() => Math.random() - 0.5);
    const needed = 10 - priorityPlayers.length;
    matchPlayers = [...priorityPlayers, ...shuffledNormal.slice(0, needed)];
-   result = findBest(matchPlayers, null);
+   result = findBest(matchPlayers);
  }
 
  if(!result){
@@ -667,12 +692,10 @@ function generateTeams(){
    excluded: excludedPlayers
  };
 
- // 이번 경기에서 배정된 포지션을 직전 기록(lastAssignedRoles)에 반영하여 다음 추첨 시 순환 유도
  lastAssignedRoles = {};
  result.a.forEach((p, i) => { lastAssignedRoles[p.name] = result.assignA.assignment[i]; });
  result.b.forEach((p, i) => { lastAssignedRoles[p.name] = result.assignB.assignment[i]; });
 
- // 로컬 스토리지에 저장하여 새로고침 시 유지 및 수동 불러오기 지원
  localStorage.setItem("ow2MatchRoomCurrentMatchData", JSON.stringify(currentMatchData));
 
  renderCurrentMatchView();
@@ -709,7 +732,6 @@ function calculateTeamAvg(team, assign){
   return sum / 5;
 }
 
-// 📂 저장된 팀 편성 결과 수동 불러오기 버튼 이벤트
 document.getElementById("loadPrevTeamBtn").addEventListener("click", () => {
   const savedMatch = localStorage.getItem("ow2MatchRoomCurrentMatchData");
   if(!savedMatch){
@@ -915,7 +937,6 @@ document.getElementById("resetStreaksBtn").addEventListener("click", () => {
   }
 });
 
-// 📊 07 섹션: 그래프 관련 함수들
 function updateGraphMemberSelect(){
   const sel = document.getElementById("graphMemberSelect");
   if(!sel) return;
@@ -1008,7 +1029,6 @@ function updateScoreChart(){
   }
 }
 
-// 🎲 맵 선택 및 모드별 랜덤 추첨 로직
 function setupMaps(preserveIndex = null){
  const sel = document.getElementById("mapSelect");
  if(!sel) return;
@@ -1358,7 +1378,6 @@ updateAllRowPreviews();
 renderStreaksTable();
 updateGraphMemberSelect();
 
-// 새로고침 시 저장된 팀 편성 결과 자동 복원
 const savedMatch = localStorage.getItem("ow2MatchRoomCurrentMatchData");
 if(savedMatch){
   try {
