@@ -185,6 +185,26 @@ const validTiers=[
 const roles=["탱커","딜러","힐러"], shortRole={탱커:"T",딜러:"D",힐러:"S"};
 
 const defaultMemberLibrary = [
+  { name: "지환", tank: ["마스터", 5], dps: ["마스터", 4], supp: ["마스터", 2], selected: true },
+  { name: "낑낑이", tank: ["마스터", 4], dps: ["그랜드마스터", 4], supp: ["마스터", 4], selected: true },
+  { name: "서준", tank: ["마스터", 5], dps: ["마스터", 5], supp: ["마스터", 3], selected: true },
+  { name: "더덕", tank: ["에메랄드", 5], dps: ["에메랄드", 2], supp: ["마스터", 5], selected: true },
+  { name: "리벤", tank: ["다이아몬드", 3], dps: ["마스터", 2], supp: ["다이아몬드", 5], selected: true },
+  { name: "경로당트월킹머신", tank: ["에메랄드", 2], dps: ["다이아몬드", 4], supp: ["플레이 안 함", 1], selected: true },
+  { name: "박준", tank: ["그랜드마스터", 5], dps: ["마스터", 3], supp: ["마스터", 2], selected: true },
+  { name: "안디유", tank: ["다이아몬드", 3], dps: ["다이아몬드", 2], supp: ["마스터", 4], selected: true },
+  { name: "GEGURI", tank: ["다이아몬드", 5], dps: ["플레이 안 함", 1], supp: ["다이아몬드", 4], selected: true },
+  { name: "황지필이", tank: ["플래티넘", 3], dps: ["골드", 1], supp: ["다이아몬드", 5], selected: true },
+  { name: "연", tank: ["다이아몬드", 5], dps: ["골드", 1], supp: ["마스터", 5], selected: true },
+  { name: "환자목발솔더태클", tank: ["다이아몬드", 5], dps: ["다이아몬드", 4], supp: ["다이아몬드", 5], selected: true },
+  { name: "츠이센규", tank: ["마스터", 3], dps: ["마스터", 5], supp: ["마스터", 5], selected: true },
+  { name: "이우철", tank: ["플레이 안 함", 1], dps: ["다이아몬드", 3], supp: ["플레이 안 함", 1], selected: true },
+  { name: "우강송강", tank: ["에메랄드", 3], dps: ["다이아몬드", 3], supp: ["마스터", 1], selected: true },
+  { name: "영찬", tank: ["플레이 안 함", 1], dps: ["플래티넘", 4], supp: ["플래티넘", 5], selected: true },
+  { name: "동준", tank: ["그랜드마스터", 4], dps: ["그랜드마스터", 4], supp: ["그랜드마스터", 4], selected: true },
+  { name: "현규", tank: ["플레이 안 함", 3], dps: ["그랜드마스터", 2], supp: ["마스터", 2], selected: true },
+  { name: "찬", tank: ["마스터", 5], dps: ["그랜드마스터", 4], supp: ["플레이 안 함", 3], selected: true },
+  { name: "연어", tank: ["마스터", 5], dps: ["마스터", 3], supp: ["그랜드마스터", 5], selected: true }
 ];
 
 const maps=[
@@ -1290,7 +1310,7 @@ function loadLibrary(show=true){
  const raw=localStorage.getItem(LIB_KEY);
  if(!raw){
   renderLibrary(defaultMemberLibrary);
-  if(show)msg("libraryNotice","기본 17명 명단을 불러왔습니다.");
+  if(show)msg("libraryNotice","기본 20명 명단을 불러왔습니다.");
   return true;
  }
  try{renderLibrary(JSON.parse(raw));if(show)msg("libraryNotice","저장된 보관함을 불러왔습니다.");return true}
@@ -1363,9 +1383,9 @@ function useSelectedMembers(){
 
 document.getElementById("addPlayerRowBtn").addEventListener("click", () => addPlayerRow());
 document.getElementById("sampleBtn").addEventListener("click",()=>{
- const top17 = defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]);
- buildRows(top17);
- msg("noticeBox","전체 17명을 불러왔습니다.");
+ const top20 = defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]);
+ buildRows(top20);
+ msg("noticeBox","전체 20명을 불러왔습니다.");
 });
 document.getElementById("saveBtn").addEventListener("click",()=>saveRoster(true));
 document.getElementById("loadBtn").addEventListener("click",()=>loadRoster(true));
@@ -1381,7 +1401,7 @@ document.getElementById("addMemberBtn").addEventListener("click",()=>{
 });
 document.getElementById("saveLibraryBtn").addEventListener("click",()=>saveLibrary(true));
 document.getElementById("loadLibraryBtn").addEventListener("click",()=>{
- if(confirm("기본 17명 데이터로 보관함을 초기화할까요?")){
+ if(confirm("기본 20명 데이터로 보관함을 초기화할까요?")){
   localStorage.removeItem(LIB_KEY);
   loadLibrary(true);
  }
@@ -1389,8 +1409,8 @@ document.getElementById("loadLibraryBtn").addEventListener("click",()=>{
 document.getElementById("useSelectedBtn").addEventListener("click",useSelectedMembers);
 
 loadLibrary(false);
-const default17 = defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]);
-buildRows(default17);
+const default20 = defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]);
+buildRows(default20);
 setupMaps(); setupDraft();
 initDaySelect();
 updateAllRowPreviews();
