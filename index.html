@@ -393,7 +393,7 @@ function updateRowPreviews(tr){
     const roleData = streaks[name]?.[role];
     let netBonus = 0;
     if(roleData){
-      netBonus = ((roleData.wins || 0) * 100) - ((roleData.losses || 0) * 100);
+      netBonus = ((roleData.wins || 0) * 50) - ((roleData.losses || 0) * 50);
     }
 
     let finalScore = baseScore + netBonus;
@@ -910,7 +910,7 @@ function renderStreaksTable(){
       const baseScore = playersBaseMap[name]?.[role] !== undefined ? playersBaseMap[name][role] : 1800;
       baseLines.push(`${baseScore.toLocaleString()}점`);
 
-      let netBonus = (wins * 100) - (losses * 100);
+      let netBonus = (wins * 50) - (losses * 50);
       let bonusStr = "0점";
       if(netBonus > 0) bonusStr = `<span style="color:var(--green); font-weight:800;">+${netBonus}점</span>`;
       else if(netBonus < 0) bonusStr = `<span style="color:var(--red); font-weight:800;">${netBonus}점</span>`;
@@ -1029,7 +1029,7 @@ function updateScoreChart(){
       const roleRecord = dayData[role];
       let netBonus = 0;
       if(roleRecord){
-        netBonus = ((roleRecord.wins || 0) * 100) - ((roleRecord.losses || 0) * 100);
+        netBonus = ((roleRecord.wins || 0) * 50) - ((roleRecord.losses || 0) * 50);
       }
       const finalScore = (baseScores[role] || 1800) + netBonus;
       datasetsMap[role].data.push(finalScore);
@@ -1431,4 +1431,5 @@ if(savedMatch){
 }
 </script>
 </body>
+</html>
 </html>
