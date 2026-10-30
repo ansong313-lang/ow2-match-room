@@ -63,7 +63,7 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
 </section>
 
 <section class="panel">
-  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단 (인원 제한 없음)</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 마스터 2 이상 고티어 인원은 팀당 최대 2명으로 제한됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button><button class="btn-secondary" id="sampleBtn">상위 14명 채우기</button><button class="btn-secondary" id="saveBtn">명단 저장</button><button class="btn-secondary" id="loadBtn">저장 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
+  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단 (인원 제한 없음)</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 마스터 2 이상 고티어 인원은 팀당 최대 2명으로 제한됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button></button><button class="btn-secondary" id="saveBtn">명단 저장</button><button class="btn-secondary" id="loadBtn">저장 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
   <div class="table-wrap">
     <table class="member-table">
       <thead><tr><th>#</th><th>이름</th><th>탱커 티어 (예상 환산)</th><th>딜러 티어 (예상 환산)</th><th>힐러 티어 (예상 환산)</th><th>삭제</th></tr></thead>
@@ -1385,11 +1385,6 @@ function useSelectedMembers(){
 }
 
 document.getElementById("addPlayerRowBtn").addEventListener("click", () => addPlayerRow());
-document.getElementById("sampleBtn").addEventListener("click",()=>{
- const top20 = defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]);
- buildRows(top20);
- msg("noticeBox","전체 20명을 불러왔습니다.");
-});
 document.getElementById("saveBtn").addEventListener("click",()=>saveRoster(true));
 document.getElementById("loadBtn").addEventListener("click",()=>loadRoster(true));
 document.getElementById("clearSaveBtn").addEventListener("click",()=>{if(confirm("저장 데이터를 삭제하시겠습니까?")){localStorage.removeItem("ow2MatchRoomRoster");msg("noticeBox","삭제되었습니다.");}});
