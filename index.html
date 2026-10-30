@@ -6,6 +6,8 @@
 <title>OW2 내전 매치룸</title>
 <!-- Chart.js 라이브러리 -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Supabase 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#0b0e14;--panel:#141923;--panel2:#1a2230;--line:#2a3445;--text:#f4f6fb;--muted:#9ba7ba;--orange:#ff8a3d;--blue:#59b8ff;--green:#63d6a3;--red:#ff6f78}
 *{box-sizing:border-box}body{margin:0;color:var(--text);background:radial-gradient(ellipse at 15% 0%,rgba(255,138,61,.12),transparent 35%),radial-gradient(ellipse at 90% 15%,rgba(89,184,255,.09),transparent 32%),var(--bg);font-family:Inter,"Pretendard","Noto Sans KR",system-ui,sans-serif;min-height:100vh}
@@ -35,7 +37,7 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">OVERWATCH 2 · CUSTOM MATCH</div><h1>내전 매치룸 <span style="color:var(--orange)">LAB</span></h1><p class="sub">우리 방 멤버 명단과 한글화된 전장 및 영웅 밴 시스템을 통해 원활한 내전을 진행하세요.</p></div><div class="pill">● 5 VS 5 MATCH ROOM</div></header>
+<header><div><div class="eyebrow">OVERWATCH 2 · CUSTOM MATCH</div><h1>내전 매치룸 <span style="color:var(--orange)">LAB</span> (서버 연동형)</h1><p class="sub">서버(DB)와 실시간 연동되어 모든 사용자에게 동일한 최신 데이터가 반영됩니다.</p></div><div class="pill" id="syncStatus">● 서버 동기화 대기중</div></header>
 
 <section class="panel" id="libraryPanel">
   <div class="section-head">
@@ -43,7 +45,7 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
     <div class="member-toolbar">
       <span class="count-label" id="libraryCount">저장 멤버 0명</span>
       <button class="btn-secondary" id="addMemberBtn">＋ 멤버 추가</button>
-      <button class="btn-secondary" id="saveLibraryBtn">명단 저장</button>
+      <button class="btn-secondary" id="saveLibraryBtn">명단 서버 저장</button>
       <button class="btn-secondary" id="backupBtn">💾 백업 다운로드</button>
       <button class="btn-secondary" id="restoreBtn" style="position:relative; overflow:hidden;">📂 데이터 복원 <input type="file" id="restoreFile" accept=".json" style="position:absolute; inset:0; opacity:0; cursor:pointer;"></button>
       <button class="btn-secondary" id="loadLibraryBtn">초기화</button>
@@ -63,7 +65,7 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
 </section>
 
 <section class="panel">
-  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단 (인원 제한 없음)</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 마스터 2 이상 고티어 인원은 팀당 최대 2명으로 제한됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button></button><button class="btn-secondary" id="saveBtn">명단 저장</button><button class="btn-secondary" id="loadBtn">저장 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
+  <div class="section-head"><div><h2>02 · 오늘 내전 참가자 명단</h2><div class="section-note">이전 경기 휴식자는 다음 경기에 100% 우선 출전하며, 마스터 2 이상 고티어 인원은 팀당 최대 2명으로 제한됩니다.</div></div><div class="actions"><button class="btn-secondary" id="addPlayerRowBtn">＋ 참가자 칸 추가</button><button class="btn-secondary" id="saveBtn">명단 서버 저장</button><button class="btn-secondary" id="loadBtn">서버 명단 불러오기</button><button class="btn-danger" id="clearSaveBtn">저장 데이터 삭제</button></div></div>
   <div class="table-wrap">
     <table class="member-table">
       <thead><tr><th>#</th><th>이름</th><th>탱커 티어 (예상 환산)</th><th>딜러 티어 (예상 환산)</th><th>힐러 티어 (예상 환산)</th><th>삭제</th></tr></thead>
@@ -124,11 +126,11 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
   <div class="section-head">
     <div>
       <h2>06 · 포지션별 일자별 통계 기록실</h2>
-      <div class="section-note">유저별로 탱커, 딜러, 힐러 전적이 하나의 행에 통합되어 한눈에 표시됩니다. (승리 시 +100점, 패배 시 -100점 적용)</div>
+      <div class="section-note">유저별로 탱커, 딜러, 힐러 전적이 하나의 행에 통합되어 표시됩니다. (승리 시 +50점, 패배 시 -50점 적용)</div>
     </div>
     <div class="actions" style="align-items:center;">
       <select id="daySelect" style="width:140px; padding:7px; font-size:12px;"></select>
-      <button class="btn-primary" id="saveDayBtn" style="padding:8px 12px; font-size:12px;">💾 오늘 경기(일차) 저장</button>
+      <button class="btn-primary" id="saveDayBtn" style="padding:8px 12px; font-size:12px;">💾 오늘 경기(일차) 서버 저장</button>
       <button class="btn-danger" id="resetStreaksBtn" style="padding:8px 12px; font-size:12px;">기록 초기화</button>
     </div>
   </div>
@@ -170,6 +172,15 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
 </div>
 
 <script>
+// ==========================================
+// 🛠️ [설정] Supabase 정보 및 관리자 비밀번호 입력
+// ==========================================
+const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co'; // 본인의 Project URL 입력
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // 본인의 anon public 키 입력
+const ADMIN_PASSWORD = '1234'; // 저장 시 필요한 관리자 비밀번호 (원하는 대로 변경 가능)
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const validTiers=[
   ["플레이 안 함", -99999, 0],
   ["브론즈", 1000, 80],
@@ -221,7 +232,7 @@ const maps=[
 
 const heroes=[
   {name:"D.Va", role:"탱커"}, {name:"둠피스트", role:"탱커"}, {name:"해저드", role:"탱커"}, {name:"정커퀸", role:"탱커"}, {name:"마우가", role:"탱커"}, {name:"오리사", role:"탱커"}, {name:"라마트라", role:"탱커"}, {name:"라인하르트", role:"탱커"}, {name:"로드호그", role:"탱커"}, {name:"시그마", role:"탱커"}, {name:"윈스턴", role:"탱커"}, {name:"레킹볼", role:"탱커"}, {name:"자리야", role:"탱커"}, {name:"도미나", role:"탱커"}, {name:"D.mon", role:"탱커"},
-  {name:"애쉬", role:"딜러"}, {name:"바스티온", role:"딜러"}, {name:"캐서디", role:"딜러"}, {name:"에코", role:"딜러"}, {name:"프레야", role:"딜러"}, {name:"겐지", role:"딜러"}, {name:"한조", role:"딜러"}, {name:"정크랫", role:"딜러"}, {name:"메이", role:"딜러"}, {name:"파라", role:"딜러"}, {name:"리퍼", role:"딜러"}, {name:"소전", role:"딜러"}, {name:"솔저: 76", role:"딜러"}, {name:"시메트라", role:"딜러"}, {name:"토르비욘", role:"딜러"}, {name:"트레이서", role:"딜러"}, {name:"벤처", role:"딜러"}, {name:"위도우메이커", role:"딜러"}, {name:"시온", role:"딜러"}, {name:"벤데타", role:"딜러"}, {name:"엠레", role:"딜러"}, {name:"안란", role:"딜러"}, {name:"시에라", role:"딜러"},
+  {name:"애쉬", role:"딜러"}, {name:"바스티온", role:"딜러"}, {name:"캐서디", role:"딜러"}, {name:"エ코", role:"딜러"}, {name:"프레야", role:"딜러"}, {name:"겐지", role:"딜러"}, {name:"한조", role:"딜러"}, {name:"정크랫", role:"딜러"}, {name:"메이", role:"딜러"}, {name:"파라", role:"딜러"}, {name:"리퍼", role:"딜러"}, {name:"소전", role:"딜러"}, {name:"솔저: 76", role:"딜러"}, {name:"시메트라", role:"딜러"}, {name:"토르비욘", role:"딜러"}, {name:"트레이서", role:"딜러"}, {name:"벤처", role:"딜러"}, {name:"위도우메이커", role:"딜러"}, {name:"시온", role:"딜러"}, {name:"벤데타", role:"딜러"}, {name:"엠레", role:"딜러"}, {name:"안란", role:"딜러"}, {name:"시에라", role:"딜러"},
   {name:"아나", role:"힐러"}, {name:"바티스트", role:"힐러"}, {name:"브리기테", role:"힐러"}, {name:"일리아리", role:"힐러"}, {name:"주노", role:"힐러"}, {name:"키리코", role:"힐러"}, {name:"라이프위버", role:"힐러"}, {name:"루시우", role:"힐러"}, {name:"메르시", role:"힐러"}, {name:"모이라", role:"힐러"}, {name:"우양", role:"힐러"}, {name:"젠야타", role:"힐러"}, {name:"독트린", role:"힐러"}, {name:"미즈키", role:"힐러"}, {name:"제트펫 캣", role:"힐러"}
 ];
 
@@ -237,7 +248,95 @@ let scoreChartInstance = null;
 let lastAssignedRoles = {};
 
 const STORAGE_PREFIX = "ow2MatchRoom_Days_v10";
+const LIB_KEY="ow2MatchRoomMemberLibrary_v10";
+const ROSTER_KEY="ow2MatchRoomRoster";
 
+// ==========================================
+// ☁️ Supabase 서버 연동 함수
+// ==========================================
+async function loadFromServer() {
+  const statusEl = document.getElementById("syncStatus");
+  try {
+    statusEl.textContent = "● 서버 데이터 불러오는 중...";
+    const { data, error } = await supabaseClient
+      .from('match_room_data')
+      .select('*')
+      .eq('id', 'room_main')
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error(error);
+      statusEl.textContent = "● 서버 연결 실패 (로컬 사용)";
+      return false;
+    }
+
+    if (data && data.content) {
+      // 서버에 데이터가 있으면 로컬스토리지 및 앱에 반영
+      if (data.content.library) localStorage.setItem(LIB_KEY, JSON.stringify(data.content.library));
+      if (data.content.days) localStorage.setItem(STORAGE_PREFIX, JSON.stringify(data.content.days));
+      if (data.content.roster) localStorage.setItem(ROSTER_KEY, JSON.stringify(data.content.roster));
+      statusEl.textContent = "● 서버 동기화 완료 (최신 상태)";
+      return true;
+    } else {
+      // 서버에 데이터가 없고, 기존 로컬 데이터가 있다면 최초 1회 서버로 마이그레이션 (자동 업로드)
+      statusEl.textContent = "● 최초 서버 업로드 중...";
+      await saveToServer(false);
+      statusEl.textContent = "● 서버 초기화 완료";
+      return true;
+    }
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = "● 서버 동기화 오류";
+    return false;
+  }
+}
+
+async function saveToServer(withPasswordCheck = true) {
+  if (withPasswordCheck) {
+    const pw = prompt("관리자 비밀번호를 입력하세요:");
+    if (pw !== ADMIN_PASSWORD) {
+      alert("비밀번호가 틀렸습니다. 서버에 저장되지 않았습니다.");
+      return false;
+    }
+  }
+
+  const statusEl = document.getElementById("syncStatus");
+  statusEl.textContent = "● 서버에 저장 중...";
+
+  const payload = {
+    library: readLibraryRows(),
+    days: getAllDaysData(),
+    roster: [...body.querySelectorAll("tr")].map(tr => {
+      const name = tr.querySelector(".p-name")?.value.trim() || "";
+      const sels = tr.querySelectorAll("select");
+      return [name, [sels[0]?.value, Number(sels[1]?.value)], [sels[2]?.value, Number(sels[3]?.value)], [sels[4]?.value, Number(sels[5]?.value)]];
+    })
+  };
+
+  try {
+    const { error } = await supabaseClient
+      .from('match_room_data')
+      .upsert({ id: 'room_main', content: payload, updated_at: new Date() });
+
+    if (error) {
+      throw error;
+    }
+
+    statusEl.textContent = "● 서버 저장 성공!";
+    msg("noticeBox", "☁️ 모든 데이터가 서버에 안전하게 저장되었습니다!");
+    setTimeout(() => { statusEl.textContent = "● 서버 동기화 완료"; }, 3000);
+    return true;
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = "● 서버 저장 실패";
+    alert("서버 저장 중 오류가 발생했습니다: " + err.message);
+    return false;
+  }
+}
+
+// ==========================================
+// 기존 로직
+// ==========================================
 function getAllDaysData(){
   const raw = localStorage.getItem(STORAGE_PREFIX);
   return raw ? JSON.parse(raw) : { "1일차 (오늘)": {} };
@@ -287,7 +386,7 @@ function handleDayChange(){
   msg("noticeBox", `[${getCurrentDayKey()}] 포지션별 전적 기록을 불러왔습니다.`);
 }
 
-document.getElementById("saveDayBtn").addEventListener("click", () => {
+document.getElementById("saveDayBtn").addEventListener("click", async () => {
   const allDays = getAllDaysData();
   const nextNum = Object.keys(allDays).length + 1;
   const newKey = `${nextNum}일차 (${new Date().toLocaleDateString()})`;
@@ -299,7 +398,8 @@ document.getElementById("saveDayBtn").addEventListener("click", () => {
   renderStreaksTable();
   updateGraphMemberSelect();
   updateScoreChart();
-  msg("noticeBox", `새로운 [${newKey}]이(가) 생성되었습니다!`);
+  
+  await saveToServer(true);
 });
 
 function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;")}
@@ -438,7 +538,7 @@ function getScore(tierName, sub, name, role){
  const streaks = getStreaks();
  const roleData = streaks[name]?.[role] || { wins: 0, losses: 0 };
  
- let bonusScore = ((roleData.wins || 0) * 100) - ((roleData.losses || 0) * 100);
+ let bonusScore = ((roleData.wins || 0) * 50) - ((roleData.losses || 0) * 50);
 
  let rotationPenalty = 0;
  if(lastAssignedRoles[name] === role){
@@ -476,20 +576,20 @@ function readPlayers(){
 
 function msg(id,text){const e=document.getElementById(id);if(e){e.textContent=text;e.style.display=text?"block":"none"}}
 
-function saveRoster(show=true){
+async function saveRoster(show=true){
  const allPs = [...body.querySelectorAll("tr")].map((tr)=>{
   const name = tr.querySelector(".p-name").value.trim();
   const selects = tr.querySelectorAll("select");
   return [name, [selects[0].value, Number(selects[1].value)], [selects[2].value, Number(selects[3].value)], [selects[4].value, Number(selects[5].value)]];
  });
- localStorage.setItem("ow2MatchRoomRoster",JSON.stringify(allPs));
- if(show)msg("noticeBox","명단 데이터가 저장되었습니다.");
+ localStorage.setItem(ROSTER_KEY,JSON.stringify(allPs));
+ await saveToServer(true);
 }
 
 function loadRoster(show=true){
- const raw=localStorage.getItem("ow2MatchRoomRoster");
+ const raw=localStorage.getItem(ROSTER_KEY);
  if(!raw){if(show)msg("errorBox","저장된 명단이 없습니다.");return false}
- try{buildRows(JSON.parse(raw));if(show)msg("noticeBox","저장된 명단을 불러왔습니다.");return true}
+ try{buildRows(JSON.parse(raw));if(show)msg("noticeBox","명단을 불러왔습니다.");return true}
  catch(e){return false}
 }
 
@@ -704,7 +804,6 @@ function generateTeams(){
  result.b.forEach((p, i) => { lastAssignedRoles[p.name] = result.assignB.assignment[i]; });
 
  localStorage.setItem("ow2MatchRoomCurrentMatchData", JSON.stringify(currentMatchData));
-
  renderCurrentMatchView();
 }
 
@@ -804,7 +903,7 @@ function resetTeamResults(){
  msg("noticeBox", "팀 편성 결과 및 휴식자 목록이 초기화되었습니다.");
 }
 
-function recordMatchWin(winningTeamKey){
+async function recordMatchWin(winningTeamKey){
   if(!currentMatchData) return;
   const streaks = getStreaks();
   
@@ -819,7 +918,6 @@ function recordMatchWin(winningTeamKey){
     const role = winningAssign[idx];
     if(!streaks[p.name]) streaks[p.name] = {};
     if(!streaks[p.name][role]) streaks[p.name][role] = { wins: 0, losses: 0 };
-
     streaks[p.name][role].wins = (streaks[p.name][role].wins || 0) + 1;
   });
 
@@ -827,12 +925,12 @@ function recordMatchWin(winningTeamKey){
     const role = losingAssign[idx];
     if(!streaks[p.name]) streaks[p.name] = {};
     if(!streaks[p.name][role]) streaks[p.name][role] = { wins: 0, losses: 0 };
-
     streaks[p.name][role].losses = (streaks[p.name][role].losses || 0) + 1;
   });
 
   saveStreaks(streaks);
-  msg("noticeBox", `${winningTeamKey === "teamA" ? "Team A" : "Team B"} 승리가 기록되었습니다! (+100/-100 반영)`);
+  await saveToServer(false); // 경기 결과 승리 기록은 비밀번호 없이 자동 서버 반영
+  msg("noticeBox", `${winningTeamKey === "teamA" ? "Team A" : "Team B"} 승리가 기록되고 서버에 반영되었습니다!`);
 }
 
 function renderStreaksTable(){
@@ -841,7 +939,7 @@ function renderStreaksTable(){
   
   const playersBaseMap = {};
   [...body.querySelectorAll("tr")].forEach(tr => {
-    const name = tr.querySelector(".p-name").value.trim();
+    const name = tr.querySelector(".p-name")?.value.trim();
     if(!name) return;
     playersBaseMap[name] = {};
     const selects = tr.querySelectorAll("select");
@@ -965,7 +1063,7 @@ function renderStreaksTable(){
 
 document.getElementById("winTeamABtn").addEventListener("click", () => recordMatchWin("teamA"));
 document.getElementById("winTeamBBtn").addEventListener("click", () => recordMatchWin("teamB"));
-document.getElementById("resetStreaksBtn").addEventListener("click", () => {
+document.getElementById("resetStreaksBtn").addEventListener("click", async () => {
   if(confirm(`[${getCurrentDayKey()}] 포지션별 기록을 초기화하시겠습니까?`)){
     const allDays = getAllDaysData();
     delete allDays[getCurrentDayKey()];
@@ -975,7 +1073,8 @@ document.getElementById("resetStreaksBtn").addEventListener("click", () => {
     updateAllRowPreviews();
     renderStreaksTable();
     updateScoreChart();
-    msg("noticeBox", "해당 일자의 기록이 초기화되었습니다.");
+    await saveToServer(false);
+    msg("noticeBox", "해당 일자의 기록이 초기화되고 서버에 반영되었습니다.");
   }
 });
 
@@ -1052,20 +1151,10 @@ function updateScoreChart(){
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: {
-            grid: { color: "#2a3445" },
-            ticks: { color: "#9ba7ba" }
-          },
-          x: {
-            grid: { color: "#2a3445" },
-            ticks: { color: "#9ba7ba" }
-          }
+          y: { grid: { color: "#2a3445" }, ticks: { color: "#9ba7ba" } },
+          x: { grid: { color: "#2a3445" }, ticks: { color: "#9ba7ba" } }
         },
-        plugins: {
-          legend: {
-            labels: { color: "#f4f6fb", font: { family: "inherit" } }
-          }
-        }
+        plugins: { legend: { labels: { color: "#f4f6fb", font: { family: "inherit" } } } }
       }
     });
   }
@@ -1145,7 +1234,6 @@ function randomMap(){
  if(!playedMapIndices.includes(idx)){
    playedMapIndices.push(idx);
  }
- 
  setupMaps(idx);
 }
 
@@ -1154,7 +1242,7 @@ document.getElementById("randomMapBtn").addEventListener("click", randomMap);
 function resetPlayedMaps(){
  playedMapIndices = [];
  setupMaps();
- msg("noticeBox", "플레이한 맵 기록이 초기화되었습니다. 모든 맵을 다시 선택할 수 있습니다.");
+ msg("noticeBox", "플레이한 맵 기록이 초기화되었습니다.");
 }
 
 function heroOptions(selected=""){
@@ -1225,7 +1313,6 @@ function randomDraft(){
  refreshDraftStatus();
 }
 
-const LIB_KEY="ow2MatchRoomMemberLibrary_v10";
 function blankMember(){return {name:"",tank:["골드",3],dps:["골드",3],supp:["골드",3],selected:false}}
 
 function createLibraryTierSelectHTML(roleName){
@@ -1302,10 +1389,10 @@ function updateLibraryCount(){
  if(countEl) countEl.textContent=`등록 ${filled}명 · 참가 선택 ${selected}명`;
 }
 
-function saveLibrary(show=true){
+async function saveLibrary(show=true){
  const data=readLibraryRows();
  localStorage.setItem(LIB_KEY,JSON.stringify(data));
- if(show) msg("libraryNotice","보관함이 저장되었습니다.");
+ await saveToServer(true);
  updateLibraryCount();
 }
 
@@ -1316,7 +1403,7 @@ function loadLibrary(show=true){
   if(show)msg("libraryNotice","기본 20명 명단을 불러왔습니다.");
   return true;
  }
- try{renderLibrary(JSON.parse(raw));if(show)msg("libraryNotice","저장된 보관함을 불러왔습니다.");return true}
+ try{renderLibrary(JSON.parse(raw));if(show)msg("libraryNotice","보관함을 불러왔습니다.");return true}
  catch(e){return false}
 }
 
@@ -1337,14 +1424,14 @@ document.getElementById("backupBtn").addEventListener("click", () => {
   document.body.appendChild(dlAnchor);
   dlAnchor.click();
   dlAnchor.remove();
-  msg("libraryNotice", "백업 파일이 성공적으로 다운로드되었습니다!");
+  msg("libraryNotice", "백업 파일이 다운로드되었습니다!");
 });
 
 document.getElementById("restoreFile").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = function(event) {
+  reader.onload = async function(event) {
     try {
       const parsed = JSON.parse(event.target.result);
       if(parsed.library) {
@@ -1356,13 +1443,14 @@ document.getElementById("restoreFile").addEventListener("change", (e) => {
         initDaySelect();
       }
       if(parsed.roster) {
-        localStorage.setItem("ow2MatchRoomRoster", JSON.stringify(parsed.roster));
+        localStorage.setItem(ROSTER_KEY, JSON.stringify(parsed.roster));
         buildRows(parsed.roster);
       }
       updateAllRowPreviews();
       renderStreaksTable();
       updateGraphMemberSelect();
-      msg("libraryNotice", "📂 백업 데이터가 성공적으로 복원되었습니다!");
+      await saveToServer(false);
+      msg("libraryNotice", "📂 백업 데이터가 복원되고 서버에 반영되었습니다!");
     } catch(err) {
       alert("올바른 백업 JSON 파일이 아닙니다.");
     }
@@ -1376,18 +1464,22 @@ function useSelectedMembers(){
   msg("libraryError","선택된 멤버가 없습니다.");
   return;
  }
- 
  selected.forEach((m)=>{
   addPlayerRow([m.name, m.tank, m.dps, m.supp]);
  });
-
  msg("noticeBox",`선택한 ${selected.length}명이 참가자 명단 하단에 추가되었습니다.`);
 }
 
 document.getElementById("addPlayerRowBtn").addEventListener("click", () => addPlayerRow());
 document.getElementById("saveBtn").addEventListener("click",()=>saveRoster(true));
 document.getElementById("loadBtn").addEventListener("click",()=>loadRoster(true));
-document.getElementById("clearSaveBtn").addEventListener("click",()=>{if(confirm("저장 데이터를 삭제하시겠습니까?")){localStorage.removeItem("ow2MatchRoomRoster");msg("noticeBox","삭제되었습니다.");}});
+document.getElementById("clearSaveBtn").addEventListener("click", async ()=>{
+  if(confirm("저장 데이터를 삭제하시겠습니까?")){
+    localStorage.removeItem(ROSTER_KEY);
+    await saveToServer(true);
+    msg("noticeBox","삭제되었습니다.");
+  }
+});
 document.getElementById("generateBtn").addEventListener("click",generateTeams);
 document.getElementById("resetTeamsBtn").addEventListener("click", resetTeamResults);
 document.getElementById("resetPlayedMapsBtn").addEventListener("click",resetPlayedMaps);
@@ -1398,32 +1490,45 @@ document.getElementById("addMemberBtn").addEventListener("click",()=>{
  const data=readLibraryRows(); data.push(blankMember()); renderLibrary(data);
 });
 document.getElementById("saveLibraryBtn").addEventListener("click",()=>saveLibrary(true));
-document.getElementById("loadLibraryBtn").addEventListener("click",()=>{
- if(confirm("기본 20명 데이터로 보관함을 초기화할까요?")){
+document.getElementById("loadLibraryBtn").addEventListener("click",async ()=>{
+ if(confirm("기본 데이터로 보관함을 초기화하고 서버에 반영할까요?")){
   localStorage.removeItem(LIB_KEY);
+  renderLibrary(defaultMemberLibrary);
+  await saveToServer(true);
   loadLibrary(true);
  }
 });
 document.getElementById("useSelectedBtn").addEventListener("click",useSelectedMembers);
 
-loadLibrary(false);
-const default20 = defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]);
-buildRows(default20);
-setupMaps(); setupDraft();
-initDaySelect();
-updateAllRowPreviews();
-renderStreaksTable();
-updateGraphMemberSelect();
+// 초기화 및 서버 로드 실행
+async function initApp() {
+  await loadFromServer();
+  loadLibrary(false);
+  const rawRoster = localStorage.getItem(ROSTER_KEY);
+  if(rawRoster) {
+    try { buildRows(JSON.parse(rawRoster)); } catch(e) { buildRows(defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp])); }
+  } else {
+    buildRows(defaultMemberLibrary.map(m=>[m.name, m.tank, m.dps, m.supp]));
+  }
+  setupMaps(); 
+  setupDraft();
+  initDaySelect();
+  updateAllRowPreviews();
+  renderStreaksTable();
+  updateGraphMemberSelect();
 
-const savedMatch = localStorage.getItem("ow2MatchRoomCurrentMatchData");
-if(savedMatch){
-  try {
-    currentMatchData = JSON.parse(savedMatch);
-    renderCurrentMatchView();
-  } catch(e){
-    localStorage.removeItem("ow2MatchRoomCurrentMatchData");
+  const savedMatch = localStorage.getItem("ow2MatchRoomCurrentMatchData");
+  if(savedMatch){
+    try {
+      currentMatchData = JSON.parse(savedMatch);
+      renderCurrentMatchView();
+    } catch(e){
+      localStorage.removeItem("ow2MatchRoomCurrentMatchData");
+    }
   }
 }
+
+initApp();
 </script>
 </body>
 </html>
