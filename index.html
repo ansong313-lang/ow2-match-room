@@ -129,8 +129,8 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
       <div class="section-note">유저별로 탱커, 딜러, 힐러 전적이 하나의 행에 통합되어 표시됩니다. (승리 시 +50점, 패배 시 -50점 적용)</div>
     </div>
     <div class="actions" style="align-items:center;">
-      <select id="daySelect" style="width:140px; padding:7px; font-size:12px;"></select>
-      <button class="btn-primary" id="saveDayBtn" style="padding:8px 12px; font-size:12px;">💾 오늘 경기(일차) 서버 저장</button>
+      <select id="daySelect" style="width:160px; padding:7px; font-size:12px;"></select>
+      <button class="btn-primary" id="saveDayBtn" style="padding:8px 12px; font-size:12px;">💾 새 일차 추가 및 저장</button>
       <button class="btn-danger" id="resetStreaksBtn" style="padding:8px 12px; font-size:12px;">기록 초기화</button>
     </div>
   </div>
@@ -175,8 +175,8 @@ input,select{width:100%;color:var(--text);background:#0f141d;border:1px solid #3
 // ==========================================
 // 🛠️ [설정] Supabase 정보 및 관리자 비밀번호 입력
 // ==========================================
-const SUPABASE_URL = 'https://xrsfqraehhbyspkwhufy.supabase.co'; // 본인의 Project URL 입력
-const SUPABASE_ANON_KEY = 'sb_publishable_woW0i2JOAyP2X5nrzHB_qA_BTkqodwL'; // 본인의 anon public 키 입력
+const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co'; // 본인의 Project URL 입력
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // 본인의 anon public 키 입력
 const ADMIN_PASSWORD = '1234'; // 저장 시 필요한 관리자 비밀번호 (원하는 대로 변경 가능)
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -216,7 +216,7 @@ const defaultMemberLibrary = [
   { name: "현규", tank: ["플레이 안 함", 3], dps: ["그랜드마스터", 2], supp: ["마스터", 2], selected: true },
   { name: "찬", tank: ["마스터", 5], dps: ["그랜드마스터", 4], supp: ["플레이 안 함", 3], selected: true },
   { name: "연어", tank: ["마스터", 5], dps: ["마스터", 3], supp: ["그랜드마스터", 5], selected: true },
-  { name: "즹즹이", tank: ["다이아", 2], dps: ["플레이 안 함", 1], supp: ["플레이 안 함", 1], selected: true },
+  { name: "즹즹이", tank: ["다이아몬드", 2], dps: ["플레이 안 함", 1], supp: ["플레이 안 함", 1], selected: true },
   { name: "느좆", tank: ["다이아몬드", 4], dps: ["다이아몬드", 3], supp: ["마스터", 3], selected: true },
   { name: "낭콩", tank: ["플레이 안 함", 1], dps: ["다이아몬드", 4], supp: ["마스터", 2], selected: true }
 ];
@@ -227,12 +227,11 @@ const maps=[
   {name:"서킷 로얄", mode:"호위"}, {name:"도라도", mode:"호위"}, {name:"하바나", mode:"호위"}, {name:"쓰레기촌", mode:"호위"}, {name:"리알토", mode:"호위"}, {name:"66번 국도", mode:"호위"}, {name:"샴발리 수도원", mode:"호위"}, {name:"그림슨뵈튼", mode:"호위"},
   {name:"콜로세오", mode:"밀기"}, {name:"이스페란사", mode:"밀기"}, {name:"뉴 퀸 스트리트", mode:"밀기"}, {name:"루나사피", mode:"밀기"},
   {name:"아틀리스", mode:"플래시포인트"}, {name:"뉴 정크 시티", mode:"플래시포인트"}, {name:"수라바사", mode:"플래시포인트"},
-  {name:"하나오카", mode:"격돌"}, {name:"아누비스의 왕좌", mode:"격돌"}
 ];
 
 const heroes=[
   {name:"D.Va", role:"탱커"}, {name:"둠피스트", role:"탱커"}, {name:"해저드", role:"탱커"}, {name:"정커퀸", role:"탱커"}, {name:"마우가", role:"탱커"}, {name:"오리사", role:"탱커"}, {name:"라마트라", role:"탱커"}, {name:"라인하르트", role:"탱커"}, {name:"로드호그", role:"탱커"}, {name:"시그마", role:"탱커"}, {name:"윈스턴", role:"탱커"}, {name:"레킹볼", role:"탱커"}, {name:"자리야", role:"탱커"}, {name:"도미나", role:"탱커"}, {name:"D.mon", role:"탱커"},
-  {name:"애쉬", role:"딜러"}, {name:"바스티온", role:"딜러"}, {name:"캐서디", role:"딜러"}, {name:"エ코", role:"딜러"}, {name:"프레야", role:"딜러"}, {name:"겐지", role:"딜러"}, {name:"한조", role:"딜러"}, {name:"정크랫", role:"딜러"}, {name:"메이", role:"딜러"}, {name:"파라", role:"딜러"}, {name:"리퍼", role:"딜러"}, {name:"소전", role:"딜러"}, {name:"솔저: 76", role:"딜러"}, {name:"시메트라", role:"딜러"}, {name:"토르비욘", role:"딜러"}, {name:"트레이서", role:"딜러"}, {name:"벤처", role:"딜러"}, {name:"위도우메이커", role:"딜러"}, {name:"시온", role:"딜러"}, {name:"벤데타", role:"딜러"}, {name:"엠레", role:"딜러"}, {name:"안란", role:"딜러"}, {name:"시에라", role:"딜러"},
+  {name:"애쉬", role:"딜러"}, {name:"바스티온", role:"딜러"}, {name:"캐서디", role:"딜러"}, {name:"에코", role:"딜러"}, {name:"프레야", role:"딜러"}, {name:"겐지", role:"딜러"}, {name:"한조", role:"딜러"}, {name:"정크랫", role:"딜러"}, {name:"메이", role:"딜러"}, {name:"파라", role:"딜러"}, {name:"리퍼", role:"딜러"}, {name:"소전", role:"딜러"}, {name:"솔저: 76", role:"딜러"}, {name:"시메트라", role:"딜러"}, {name:"토르비욘", role:"딜러"}, {name:"트레이서", role:"딜러"}, {name:"벤처", role:"딜러"}, {name:"위도우메이커", role:"딜러"}, {name:"시온", role:"딜러"}, {name:"벤데타", role:"딜러"}, {name:"엠레", role:"딜러"}, {name:"안란", role:"딜러"}, {name:"시에라", role:"딜러"},
   {name:"아나", role:"힐러"}, {name:"바티스트", role:"힐러"}, {name:"브리기테", role:"힐러"}, {name:"일리아리", role:"힐러"}, {name:"주노", role:"힐러"}, {name:"키리코", role:"힐러"}, {name:"라이프위버", role:"힐러"}, {name:"루시우", role:"힐러"}, {name:"메르시", role:"힐러"}, {name:"모이라", role:"힐러"}, {name:"우양", role:"힐러"}, {name:"젠야타", role:"힐러"}, {name:"독트린", role:"힐러"}, {name:"미즈키", role:"힐러"}, {name:"제트펫 캣", role:"힐러"}
 ];
 
@@ -271,14 +270,12 @@ async function loadFromServer() {
     }
 
     if (data && data.content) {
-      // 서버에 데이터가 있으면 로컬스토리지 및 앱에 반영
       if (data.content.library) localStorage.setItem(LIB_KEY, JSON.stringify(data.content.library));
       if (data.content.days) localStorage.setItem(STORAGE_PREFIX, JSON.stringify(data.content.days));
       if (data.content.roster) localStorage.setItem(ROSTER_KEY, JSON.stringify(data.content.roster));
       statusEl.textContent = "● 서버 동기화 완료 (최신 상태)";
       return true;
     } else {
-      // 서버에 데이터가 없고, 기존 로컬 데이터가 있다면 최초 1회 서버로 마이그레이션 (자동 업로드)
       statusEl.textContent = "● 최초 서버 업로드 중...";
       await saveToServer(false);
       statusEl.textContent = "● 서버 초기화 완료";
@@ -335,11 +332,21 @@ async function saveToServer(withPasswordCheck = true) {
 }
 
 // ==========================================
-// 기존 로직
+// 일차 정렬 및 데이터 관리 로직
 // ==========================================
 function getAllDaysData(){
   const raw = localStorage.getItem(STORAGE_PREFIX);
   return raw ? JSON.parse(raw) : { "1일차 (오늘)": {} };
+}
+
+// 일차 숫자 기준 오름차순 정렬 (1일차, 2일차, 3일차... 10일차)
+function getSortedDayKeys(allDays) {
+  return Object.keys(allDays).sort((a, b) => {
+    const numA = parseInt(a.match(/^(\d+)일차/)?.[1] || 999999, 10);
+    const numB = parseInt(b.match(/^(\d+)일차/)?.[1] || 999999, 10);
+    if (numA !== numB) return numA - numB;
+    return a.localeCompare(b);
+  });
 }
 
 function saveAllDaysData(data){
@@ -371,10 +378,10 @@ function saveStreaks(streaks){
 function initDaySelect(){
   const allDays = getAllDaysData();
   const sel = document.getElementById("daySelect");
-  const keys = Object.keys(allDays);
+  const keys = getSortedDayKeys(allDays);
   if(keys.length === 0) keys.push("1일차 (오늘)");
   
-  const currentVal = sel.value || keys[0];
+  const currentVal = (sel.value && keys.includes(sel.value)) ? sel.value : keys[keys.length - 1];
   sel.innerHTML = keys.map(k => `<option value="${k}" ${k === currentVal ? "selected" : ""}>${k}</option>`).join("");
   sel.removeEventListener("change", handleDayChange);
   sel.addEventListener("change", handleDayChange);
@@ -388,7 +395,13 @@ function handleDayChange(){
 
 document.getElementById("saveDayBtn").addEventListener("click", async () => {
   const allDays = getAllDaysData();
-  const nextNum = Object.keys(allDays).length + 1;
+  const sortedKeys = getSortedDayKeys(allDays);
+  let maxNum = 0;
+  sortedKeys.forEach(k => {
+    const m = k.match(/^(\d+)일차/);
+    if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+  });
+  const nextNum = maxNum + 1;
   const newKey = `${nextNum}일차 (${new Date().toLocaleDateString()})`;
   allDays[newKey] = {};
   saveAllDaysData(allDays);
@@ -929,7 +942,7 @@ async function recordMatchWin(winningTeamKey){
   });
 
   saveStreaks(streaks);
-  await saveToServer(false); // 경기 결과 승리 기록은 비밀번호 없이 자동 서버 반영
+  await saveToServer(false);
   msg("noticeBox", `${winningTeamKey === "teamA" ? "Team A" : "Team B"} 승리가 기록되고 서버에 반영되었습니다!`);
 }
 
@@ -1097,7 +1110,7 @@ function updateScoreChart(){
 
   const memberName = document.getElementById("graphMemberSelect").value;
   const allDays = getAllDaysData();
-  const dayKeys = Object.keys(allDays);
+  const dayKeys = getSortedDayKeys(allDays); // 👈 일차 번호 오름차순 정렬 적용
 
   const datasetsMap = {
     "탱커": { label: "탱커 평점", data: [], borderColor: "#ff8a3d", backgroundColor: "rgba(255,138,61,0.2)", tension: 0.1 },
